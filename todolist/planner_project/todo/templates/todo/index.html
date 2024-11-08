@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 8px;
+            margin-bottom: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .add-task {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(function() {
+            $("ul").sortable({
+                update: function(event, ui) {
+                    let sortedIDs = $(this).sortable("toArray");
+                    sortedIDs.forEach((id, index) => {
+                        $.ajax({
+                            url: '/api/tasks/' + id + '/',
+                            type: 'PATCH',
+                            data: JSON.stringify({ priority: index }),
+                            contentType: 'application/json',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            success: function(response) {
+                                console.log("Priority of task " + id + " updated to " + index);
+                            }
+                        });
+                    });
+                }
+            });
+            $("ul").disableSelection();
+        });
+
+        function toggleCompleted(taskId) {
+            $.ajax({
+                url: '/api/tasks/' + taskId + '/',
+                type: 'PATCH',
+                data: JSON.stringify({ completed: !$('#task-' + taskId).hasClass('completed') }),
+                contentType: 'application/json',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    let taskElement = $('#task-' + taskId);
+                    if (response.completed) {
+                        taskElement.addClass('completed');
+                        taskElement.find('button').first().text('Undo');
+                    } else {
+                        taskElement.removeClass('completed');
+                        taskElement.find('button').first().text('Complete');
+                    }
+                }
+            });
+        }
+
+        function deleteTask(taskId) {
+            $.ajax({
+                url: '/api/tasks/' + taskId + '/',
+                type: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    $('#task-' + taskId).remove();
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <ul>
+        {% for task in tasks %}
+        <li id="task-{{ task.id }}" class="{% if task.completed %}completed{% endif %}">
+            <div>
+                <a href="{% url 'task_detail' task.id %}">{{ task.title }}</a> - {% if task.completed %}Done{% else %}Pending{% endif %}
+            </div>
+            <div class="buttons">
+                <button onclick="toggleCompleted({{ task.id }})">{% if task.completed %}Undo{% else %}Complete{% endif %}</button>
+                <button onclick="deleteTask({{ task.id }})">Delete</button>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'add_task' %}" class="add-task">Add Task</a>
+</body>
+</html>

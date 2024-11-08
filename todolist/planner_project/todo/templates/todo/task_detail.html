@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Detail</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        .task-details {
+            width: 300px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        .task-details h2 {
+            margin-top: 0;
+        }
+        .edit-link {
+            display: block;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Task Detail</h1>
+    <div class="task-details">
+        <h2>{{ task.title }}</h2>
+        <p>{{ task.description }}</p>
+        <p>Status: {% if task.completed %}Completed{% else %}Pending{% endif %}</p>
+        <a href="{% url 'edit_task' task.id %}" class="edit-link">Edit Task</a>
+        <a href="{% url 'index' %}">Back to To-Do List</a>
+    </div>
+</body>
+</html>
