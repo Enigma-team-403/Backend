@@ -45,40 +45,46 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'members.apps.MembersConfig',
+    'jwt_token_authentication',
 
 
-     'django.contrib.sites',  # Required for allauth
+
+    'django.contrib.sites',  # Required for allauth
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'social_django',
-    'django.contrib.sites'
+    'rest_framework_simplejwt.token_blacklist'
+    
 ]
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+SIMPLE_JWT = {
+    'BLACKLIST_AFTER_ROTATION': True}
+
+
+
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 
-    'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
+
+    # 'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
 )
 
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = 'your-client-id'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'your-client-secret'
-
+LOGIN_REDIRECT_URL = '/'
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 SITE_ID = 1
 
-
-
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'CLIENT_ID': 'your-google-client-id',
-        'SECRET': 'your-google-secret',
-    }
-}
 
 
 
@@ -109,7 +115,7 @@ ROOT_URLCONF = 'jwt_token_authentication.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -182,3 +188,5 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

@@ -3,6 +3,11 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 
+
+from django.contrib.auth import get_user_model
+from django.conf import settings
+
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
         if not email:
@@ -31,4 +36,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	def __str__(self):
 		return self.email
+
+
+
+class UserToken(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    access_token = models.CharField(max_length=500)
+    refresh_token = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expired = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Token for {self.user.email}"
 

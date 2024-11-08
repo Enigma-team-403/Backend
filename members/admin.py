@@ -2,6 +2,12 @@ from django.contrib import admin
 from .models import User
 
 
+from .models import UserToken
+
+
+
+
+
 from django.shortcuts import render
 from django.contrib.auth.models import User
 
@@ -11,3 +17,13 @@ def show_logged_in_users(request):
 
 
 admin.site.register(User)
+
+admin.site.register(UserToken)
+
+
+
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('username', 'email', 'last_active', 'is_active')
