@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add/Edit Task</title>
+</head>
+<body>
+    <h2>{{ task.id|default:"Add" }} Task</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Task</button>
+    </form>
+</body>
+</html>

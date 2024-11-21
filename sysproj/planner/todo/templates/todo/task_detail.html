@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Task Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .task-detail {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            background-color: {{ task.color }};
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .comment-form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="task-detail">
+        <h2>{{ task.title }}</h2>
+        <p><strong>Description:</strong> {{ task.description }}</p>
+        <p><strong>Date:</strong> {{ task.date }}</p>
+        <p><strong>Time:</strong> {{ task.time }}</p>
+        <p><strong>Alarm Time:</strong> {{ task.alarm_time }}</p>
+        <p><strong>Priority:</strong> {{ task.priority }}</p>
+        <p><strong>Completed:</strong> {{ task.completed }}</p>
+        <div class="buttons">
+            <a href="{% url 'edit_task' task.id %}">Edit Task</a>
+            <a href="{% url 'index' %}">Back to List</a>
+        </div>
+        <h3>Comments</h3>
+        <ul>
+            {% for comment in comments %}
+                <li>{{ comment.content }} - <em>{{ comment.created_at }}</em></li>
+            {% endfor %}
+        </ul>
+        <form method="post" class="comment-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Add Comment</button>
+        </form>
+    </div>
+</body>
+</html>

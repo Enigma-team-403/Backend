@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Profile</title>
+</head>
+<body>
+    <h2>{{ profile.user.username }}'s Profile</h2>
+    {% if profile.profile_image %}
+        <img src="{{ profile.profile_image.url }}" alt="Profile Image" style="max-width: 150px; max-height: 150px;">
+    {% else %}
+        <p>No profile image.</p>
+    {% endif %}
+    <p>Bio: {{ profile.bio }}</p>
+    <p>Email: {{ profile.user.email }}</p>
+    <a href="{% url 'edit_profile' %}">Edit Profile</a>
+    <a href="{% url 'change_password' %}">Change Password</a>
+    <a href="{% url 'index' %}">Back to Home</a>
+</body>
+</html>
