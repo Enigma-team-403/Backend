@@ -10,7 +10,7 @@ from rest_framework import routers
 
 
 router = routers.DefaultRouter()
-router.register(r'', MemberViewSet, basename='member')
+router.register(r'lists', MemberViewSet, basename='member')
 
 urlpatterns = [
 	path('user/register/', UserRegistrationAPIView.as_view()),
@@ -20,5 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('token/', jwt_views.TokenObtainPairView.as_view(),name = 'token_obtain_pair'),
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name = 'token_refresh'),
-    path('members/', include(router.urls))
+    path('', include(router.urls))
 ]
