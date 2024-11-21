@@ -3,6 +3,8 @@ from .models import User
 
 
 from .models import UserToken
+from django.apps import AppConfig
+
 
 
 

@@ -7,7 +7,22 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
+from django.contrib.auth.models import User
+from django.db import models
 
+from jwt_token_authentication.models import BaseModel
+
+
+
+class Member(BaseModel):
+    """
+    Member model with reference to django auth user, providing all attributes and more to fulfill the requirements
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '%s %s - %s' % (self.user.first_name, self.user.last_name, self.created_at)
+    
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
         if not email:
@@ -15,7 +30,8 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
-        user.save(using=self._db)
+        user.save(using=self._db)         
+       
         return user
 
     def create_superuser(self, email, username, password=None, **extra_fields):
@@ -49,3 +65,12 @@ class UserToken(models.Model):
     def __str__(self):
         return f"Token for {self.user.email}"
 
+
+class Member(BaseModel):
+    """
+    Member model with reference to django auth user, providing all attributes and more to fulfill the requirements
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '%s %s - %s' % (self.user.first_name, self.user.last_name, self.created_at)

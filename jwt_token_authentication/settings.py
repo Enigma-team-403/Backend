@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-&o*y(slzh!mvh*%+z1dl3jvtdx+*xigc^lo9fsjox16ex7jo5w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['shadizargar.pythonanywhere.com','127.0.0.1','root']
 
 ## custom user model
 AUTH_USER_MODEL = 'members.User'
@@ -47,27 +48,34 @@ INSTALLED_APPS = [
     'members.apps.MembersConfig',
     'jwt_token_authentication',
 
-
-
     'django.contrib.sites',  # Required for allauth
     'allauth',
     'allauth.account',
-    'rest_framework_simplejwt.token_blacklist'
-    
-]
+    'rest_framework_simplejwt.token_blacklist',
+    'boards',
+    'cards',
+    ]
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',]
+
 }
 
 SIMPLE_JWT = {
-    'BLACKLIST_AFTER_ROTATION': True}
+    'USER_ID_FIELD': 'user_id',  # Ensure this is set to 'user_id'
+    'USER_ID_CLAIM': 'user_id',  # The key in the payload
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Example: Increase to 15 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=5),
+}
 
 
 
@@ -75,9 +83,6 @@ SIMPLE_JWT = {
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-
-
-    # 'social_core.backends.google.GoogleOAuth2',  # Google OAuth2 backend
 )
 
 
@@ -183,6 +188,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
