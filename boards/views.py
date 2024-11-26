@@ -50,45 +50,113 @@
 
 
 
-from rest_framework import viewsets
-from boards.models import Board
-from boards.serializers.boards_serializers import BoardSerializer
-from boards.models import List
-from boards.serializers.lists_serializers import ListSerializer
-from boards.models import Label
-from boards.serializers.labels_serializers import LabelSerializer
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework import viewsets
+# from boards.models import Board
+# from boards.serializers.boards_serializers import BoardSerializer
+# from boards.models import List
+# from boards.serializers.lists_serializers import ListSerializer
+# from boards.models import Label
+# from boards.serializers.labels_serializers import LabelSerializer
+# from rest_framework.permissions import IsAuthenticated
 
 
-from rest_framework.permissions import BasePermission
+# from rest_framework.permissions import BasePermission
 
-class BoardViewSet(viewsets.ModelViewSet):
-    # queryset = Board.objects.all()
-    serializer_class = BoardSerializer
-    def get_queryset(self):
-        return  Board.objects.all()
+# class BoardViewSet(viewsets.ModelViewSet):
+#     # queryset = Board.objects.all()
+#     serializer_class = BoardSerializer
+#     def get_queryset(self):
+#         return  Board.objects.all()
      
 
-    def get_serializer_context(self):
-        # Pass the request context to the serializer so it can access the user
-        return {'request': self.request}
+#     def get_serializer_context(self):
+#         # Pass the request context to the serializer so it can access the user
+#         return {'request': self.request}
 
+
+
+# class ListViewSet(viewsets.ModelViewSet):
+#     queryset = List.objects.all()
+#     serializer_class = ListSerializer
+
+
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+    
+
+# class LabelViewSet(viewsets.ModelViewSet):
+#     queryset = Label.objects.all()
+#     serializer_class = LabelSerializer
+
+
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+
+
+
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from boards.models import Board, List, Label
+from boards.serializers.boards_serializers import BoardSerializer
+from boards.serializers.lists_serializers import ListSerializer
+from boards.serializers.labels_serializers import LabelSerializer
+
+class BoardViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet to provide CRUD functionality for the Board model.
+    Users can only see their own boards and create boards associated with their account.
+    """
+    serializer_class = BoardSerializer
+    permission_classes = [IsAuthenticated]  # Ensures only authenticated users can access this view.
+
+    def get_queryset(self):
+        """
+        Filter boards to only those created by the currently authenticated user.
+        """
+        return Board.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        """
+        Automatically associate the currently authenticated user with the created board.
+        """
+        serializer.save(user=self.request.user)
+
+    def get_serializer_context(self):
+        """
+        Pass the request context to the serializer so it can access the user.
+        """
+        return {'request': self.request}
 
 
 class ListViewSet(viewsets.ModelViewSet):
-    queryset = List.objects.all()
+    """
+    ViewSet to provide CRUD functionality for the List model.
+    """
     serializer_class = ListSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        """
+        Filter lists to those the user has access to, if needed.
+        """
+        return List.objects.all()
 
     def get_serializer_context(self):
         return {'request': self.request}
-    
+
 
 class LabelViewSet(viewsets.ModelViewSet):
-    queryset = Label.objects.all()
+    """
+    ViewSet to provide CRUD functionality for the Label model.
+    """
     serializer_class = LabelSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        """
+        Filter labels to those the user has access to, if needed.
+        """
+        return Label.objects.all()
 
     def get_serializer_context(self):
         return {'request': self.request}
-
