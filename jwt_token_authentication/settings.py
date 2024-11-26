@@ -56,24 +56,29 @@ INSTALLED_APPS = [
     'cards',
     ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173'
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
+        
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',]
-
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ]
 }
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_id',  # Ensure this is set to 'user_id'
     'USER_ID_CLAIM': 'user_id',  # The key in the payload
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Example: Increase to 15 minutes
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),  # Example: Increase to 15 minutes
     'REFRESH_TOKEN_LIFETIME': timedelta(days=5),
 }
 
@@ -104,6 +109,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMidleware',
 
 
 
@@ -183,6 +189,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
 
 
 # Static files (CSS, JavaScript, Images)
