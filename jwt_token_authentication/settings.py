@@ -142,11 +142,12 @@ WSGI_APPLICATION = 'jwt_token_authentication.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ToDo',
-        'USER': 'root',
-        'PASSWORD': 'Shadi!zedzed6',
-        'HOST': '127.0.0.1', 
-        'PORT': '3306',
+        'NAME': 'ShadiZargar$MyToDo',
+        'USER': 'ShadiZargar',
+        'PASSWORD': 'shadi1382',
+        'HOST': 'ShadiZargar.mysql.pythonanywhere-services.com',
+	'options' : {'sql_mode' : 'traditional'},
+       
     }
 }
 
@@ -194,5 +195,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
