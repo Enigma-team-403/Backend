@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ planner_type|title }} Planner</title>
+</head>
+<body>
+    <h1>{{ planner_type|title }} Planner</h1>
+    
+    <form method="get" action="{% url 'planner' %}">
+        <label for="planner_type">Choose a Planner Type:</label>
+        <select name="planner_type" id="planner_type" onchange="this.form.submit()">
+            <option value="3_days" {% if planner_type == '3_days' %}selected{% endif %}>3 Days</option>
+            <option value="weekly" {% if planner_type == 'weekly' %}selected{% endif %}>Weekly</option>
+            <option value="monthly" {% if planner_type == 'monthly' %}selected{% endif %}>Monthly</option>
+        </select>
+    </form>
+    
+    <h2>Tasks for {{ planner_type|title }}:</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>
+                <strong>{{ task.title }}</strong><br>
+                Start Time: {{ task.start_time }}<br>
+                End Time: {{ task.end_time }}<br>
+                Description: {{ task.description }}<br>
+                <hr>
+            </li>
+        {% empty %}
+            <li>No tasks found for this time period.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

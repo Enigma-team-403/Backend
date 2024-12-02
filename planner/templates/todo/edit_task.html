@@ -1,0 +1,94 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        .form-group {
+            margin-bottom: 20px; /* Adds space between form fields */
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px; /* Adds space between label and input */
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .form-submit {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .form-submit:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Task</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name" class="form-label">Task Name:</label>
+                <input type="text" name="name" id="name" class="form-input" value="{{ form.name.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description:</label>
+                <textarea name="description" id="description" class="form-input" rows="4">{{ form.description.value }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="start_time" class="form-label">Start Time:</label>
+                <input type="datetime-local" name="start_time" id="start_time" class="form-input" value="{{ form.start_time.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="end_time" class="form-label">End Time:</label>
+                <input type="datetime-local" name="end_time" id="end_time" class="form-input" value="{{ form.end_time.value }}">
+            </div>
+
+            <div class="form-group">
+                <label for="priority" class="form-label">Priority:</label>
+                <select name="priority" id="priority" class="form-input">
+                    <option value="1" {% if form.priority.value == 1 %}selected{% endif %}>1</option>
+                    <option value="2" {% if form.priority.value == 2 %}selected{% endif %}>2</option>
+                    <option value="3" {% if form.priority.value == 3 %}selected{% endif %}>3</option>
+                    <option value="4" {% if form.priority.value == 4 %}selected{% endif %}>4</option>
+                    <option value="5" {% if form.priority.value == 5 %}selected{% endif %}>5</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="status" class="form-label">Status:</label>
+                <select name="status" id="status" class="form-input">
+                    <option value="not_started" {% if form.status.value == 'not_started' %}selected{% endif %}>Not Started</option>
+                    <option value="in_progress" {% if form.status.value == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if form.status.value == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="form-submit">Save Task</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

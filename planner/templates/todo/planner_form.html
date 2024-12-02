@@ -1,0 +1,29 @@
+<!-- planner_form.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Form</title>
+</head>
+<body>
+    <h1>{{ planner_type|title }} Planner</h1>
+    
+    <h2>Tasks for the next {{ planner_type|title }}:</h2>
+    <ul>
+        {% for task in tasks %}
+            <li>
+                <strong>{{ task.title }}</strong><br>
+                Start Time: {{ task.start_time }}<br>
+                End Time: {{ task.end_time }}<br>
+                Description: {{ task.description }}<br>
+                <hr>
+            </li>
+        {% empty %}
+            <li>No tasks found for this time period.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="/planner/">Back to Planner Selection</a>
+</body>
+</html>
