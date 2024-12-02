@@ -1,8 +1,0 @@
-# give loged_in users
-
-from django.contrib.auth.models import User
-logged_in_users = User.objects.filter(is_active=True)
-for user in logged_in_users:
-    print(user.username)
-
-
