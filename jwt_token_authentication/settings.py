@@ -52,8 +52,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'rest_framework_simplejwt.token_blacklist',
-    'boards',
-    'cards',
+    'planner'
     ]
 
 CORS_ALLOWED_ORIGINS = [
