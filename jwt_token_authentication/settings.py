@@ -55,7 +55,9 @@ INSTALLED_APPS = [
     'planner',
     'crispy_forms',
     'plyer',
-    'apscheduler',
+    # 'apscheduler',
+    
+
     ]
 
 CORS_ALLOWED_ORIGINS = [
