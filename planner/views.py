@@ -6,6 +6,7 @@ from .forms import TaskForm, ChecklistItemForm, CommentForm
 from rest_framework import viewsets
 from .serializers import TaskSerializer
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 from django.contrib import messages
 class TaskViewSet(viewsets.ModelViewSet):
@@ -134,55 +135,58 @@ def get_task_status(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     return JsonResponse({'status': task.status})
 
-
+from datetime import timedelta
+from django.utils import timezone
+from django.db.models import Q
 
 def planner_view(request):
     planner_type = request.GET.get('planner_type', '3_days')  # Default to 3 days
     now = timezone.now()
 
-    # Determine the end date for the selected planner type
+    # Determine the start and end date for the selected planner type
     if planner_type == '3_days':
-        end_date = now + timedelta(days=3)
+        end_date = now + timedelta(days=3)  # 3 days from now
     elif planner_type == 'weekly':
-        end_date = now + timedelta(weeks=1)
+        end_date = now + timedelta(weeks=1)  # 1 week from now
     elif planner_type == 'monthly':
-        end_date = now + timedelta(days=30)
+        end_date = now + timedelta(days=30)  # 30 days from now
     else:
         end_date = now + timedelta(days=3)  # Default to 3 days if invalid
 
-    # Filter tasks whose `end_time` falls within the specified range
-    tasks = Task.objects.filter(start_time__gte=now, end_time__lte=end_date)
+    # Filter tasks based on the selected planner type
+    tasks = Task.objects.filter(
+        Q(end_time__gte=now, end_time__lte=end_date)  # Tasks that have an end time within the filter window
+    )
 
     return render(request, 'todo/planner.html', {
         'tasks': tasks,
         'planner_type': planner_type,
     })
 
+
 def planner_form_view(request):
     planner_type = request.GET.get('planner_type', '3_days')
-    priority = request.GET.get('priority')  # Fetch priority from query params
     now = timezone.now()
 
-    # Filter tasks based on the selected planner type
+    # Determine the end date for the selected planner type
     if planner_type == '3_days':
-        tasks = Task.objects.filter(start_time__gte=now, end_time__lte=now + timedelta(days=3))
+        end_date = now + timedelta(days=3)  # 3 days from now
     elif planner_type == 'weekly':
-        tasks = Task.objects.filter(start_time__gte=now, end_time__lte=now + timedelta(weeks=1))
+        end_date = now + timedelta(weeks=1)  # 1 week from now
     elif planner_type == 'monthly':
-        tasks = Task.objects.filter(start_time__gte=now, end_time__lte=now + timedelta(days=30))
+        end_date = now + timedelta(days=30)  # 30 days from now
     else:
-        tasks = Task.objects.all()  # Default case: show all tasks
+        end_date = now + timedelta(days=3)  # Default to 3 days if invalid
 
-    # Apply priority filter if provided
-    if priority:
-        try:
-            priority = int(priority)  # Convert priority to integer
-            tasks = tasks.filter(priority=priority)
-        except ValueError:
-            pass  # Ignore invalid priority values
+    # Filter tasks based on the selected planner type
+    tasks = Task.objects.filter(
+        Q(end_time__gte=now, end_time__lte=end_date)  # Tasks that have an end time within the filter window
+    )
+
+    # Debugging: print tasks to check the filtering results
+    print(f"Tasks found: {tasks}")
 
     return render(request, 'todo/planner_form.html', {
         'tasks': tasks,
         'planner_type': planner_type,
-        'priority': priority,
     })
