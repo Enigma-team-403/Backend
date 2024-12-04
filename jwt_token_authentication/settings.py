@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'rest_framework_simplejwt.token_blacklist',
-    'planner'
+    'planner',
+    'crispy_forms',
     ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -146,17 +147,24 @@ WSGI_APPLICATION = 'jwt_token_authentication.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'ShadiZargar$MyToDo',
+#         'USER': 'ShadiZargar',
+#         'PASSWORD': 'shadi1382',
+#         'HOST': 'ShadiZargar.mysql.pythonanywhere-services.com',
+# 	'options' : {'sql_mode' : 'traditional'},
+       
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ShadiZargar$MyToDo',
-        'USER': 'ShadiZargar',
-        'PASSWORD': 'shadi1382',
-        'HOST': 'ShadiZargar.mysql.pythonanywhere-services.com',
-	'options' : {'sql_mode' : 'traditional'},
-       
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 
 # Password validation

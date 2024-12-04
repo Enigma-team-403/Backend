@@ -17,7 +17,6 @@ urlpatterns = [
     path('tasks/<int:task_id>/status/', get_task_status, name='get_task_status'),
     path('planner/', views.planner_view, name='planner'),
     path('planner/form/', views.planner_form_view, name='planner-form'),
-
     path('add/', views.add_task, name='add_task'),
     path('toggle-completed/<int:task_id>/', views.toggle_completed, name='toggle_completed'),
     path('task/<int:task_id>/', views.task_detail, name='task_detail'),
