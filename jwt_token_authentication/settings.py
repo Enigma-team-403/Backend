@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'planner',
     'crispy_forms',
     'plyer',
-    # 'apscheduler',
 
 
     ]

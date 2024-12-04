@@ -1,4 +1,3 @@
-from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils import timezone
 from .models import Task
 from plyer import notification
@@ -15,7 +14,4 @@ def check_alarms():
         task.completed = True 
         task.save()
 
-def start():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(check_alarms, 'interval', minutes=1)
-    scheduler.start()
+
