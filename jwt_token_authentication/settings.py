@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'planner',
     'crispy_forms',
+    'plyer',
+    'apscheduler',
     ]
 
 CORS_ALLOWED_ORIGINS = [
