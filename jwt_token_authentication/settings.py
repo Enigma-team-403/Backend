@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'rest_framework_simplejwt.token_blacklist',
     'planner',
+    'HabitTracker',
     'crispy_forms',
     'plyer',
 
