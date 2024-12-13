@@ -1,0 +1,42 @@
+
+{% block content %}
+  <h1>Planner</h1>
+  
+  <form method="get">
+    <label for="planner_type">Planner Type:</label>
+    <select name="planner_type" id="planner_type">
+      <option value="3_days" {% if planner_type == '3_days' %}selected{% endif %}>3 Days</option>
+      <option value="weekly" {% if planner_type == 'weekly' %}selected{% endif %}>Weekly</option>
+      <option value="monthly" {% if planner_type == 'monthly' %}selected{% endif %}>Monthly</option>
+    </select>
+
+    <label for="priority">Priority:</label>
+    <select name="priority" id="priority">
+      <option value="">All</option>
+      <option value="1" {% if priority == '1' %}selected{% endif %}>1</option>
+      <option value="2" {% if priority == '2' %}selected{% endif %}>2</option>
+      <option value="3" {% if priority == '3' %}selected{% endif %}>3</option>
+      <option value="4" {% if priority == '4' %}selected{% endif %}>4</option>
+      <option value="5" {% if priority == '5' %}selected{% endif %}>5</option>
+    </select>
+
+    <button type="submit">Filter</button>
+  </form>
+
+  {% if tasks %}
+    <ul>
+      {% for task in tasks %}
+        <li>
+          <strong>{{ task.name }}</strong><br>
+          <p>{{ task.description }}</p>
+          <p>Start Time: {{ task.start_time }}</p>
+          <p>End Time: {{ task.end_time }}</p>
+          <p>Priority: {{ task.priority }}</p>
+          <p>Status: {{ task.status }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No tasks found for the selected criteria.</p>
+  {% endif %}
+{% endblock %}

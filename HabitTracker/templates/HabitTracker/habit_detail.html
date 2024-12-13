@@ -1,0 +1,22 @@
+{% block content %}
+  <h1>{{ habit.name }}</h1>
+  <p>{{ habit.description }}</p>
+  <p>Duration: {{ habit.duration }} days</p>
+  <p>Goal: Complete {{ habit.goal }} days</p>
+  <p>Progress: {{ progress_percentage }}%</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <ul>
+      {% for progress in daily_progress %}
+        <li>
+          <label>
+            <input type="checkbox" name="day_{{ progress.date }}" {% if progress.completed %}checked{% endif %}>
+            {{ progress.date }}
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+    <button type="submit">Update Progress</button>
+  </form>
+{% endblock %}
