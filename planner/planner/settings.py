@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'todo',
     'profiles',
+    'community',
+    'HabitTracker'
+    
 ]
 
 REST_FRAMEWORK = {

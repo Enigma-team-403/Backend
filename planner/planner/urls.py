@@ -20,6 +20,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('todo.urls')),
-    path('api/', include('profiles.urls')), 
+    path('api/todo/', include('todo.urls')),
+    path('api/profiles/', include('profiles.urls')), 
+    path('api/community/', include('community.urls')),
+    
+    path('api/Habits/', include('HabitTracker.urls')),
 ]
