@@ -1,4 +1,4 @@
-{% block content %}
+{% comment %} {% block content %}
   <h1>{{ habit.name }}</h1>
   <p>{{ habit.description }}</p>
   <p>Duration: {{ habit.duration }} days</p>
@@ -19,4 +19,37 @@
     </ul>
     <button type="submit">Update Progress</button>
   </form>
+{% endblock %} {% endcomment %}
+
+{% block content %}
+  <h1>{{ habit.name }}</h1>
+  <p><strong>Description:</strong> {{ habit.description }}</p>
+  <p><strong>Duration:</strong> {{ habit.duration }} days</p>
+  <p><strong>Goal:</strong> Complete {{ habit.goal }} days</p>
+  <p><strong>Progress:</strong> {{ progress_percentage }}%</p>
+
+  <h3>Daily Progress</h3>
+  <form method="post">
+    {% csrf_token %}
+    <ul>
+      {% for progress in daily_progress %}
+        <li>
+          <label>
+            <input type="checkbox" name="day_{{ progress.date }}" {% if progress.completed %}checked{% endif %}>
+            {{ progress.date }}
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary">Update Progress</button>
+    </div>
+  </form>
+
+  <div class="habit-actions">
+    <a href="{% url 'habit-reset' habit.id %}" class="btn btn-warning">Reset Habit</a>
+    <a href="{% url 'habit-delete' habit.id %}" class="btn btn-danger">Delete Habit</a>
+    <a href="{% url 'habit-edit' habit.id %}" class="btn btn-secondary">Edit Habit</a>
+  </div>
 {% endblock %}

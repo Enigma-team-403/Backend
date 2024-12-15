@@ -1,0 +1,5 @@
+<h1>Are you sure you want to delete the community: {{ community.title }}?</h1>
+<form method="POST">
+  {% csrf_token %}
+  <button type="submit">Yes, delete</button>
+</form>

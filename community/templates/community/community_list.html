@@ -1,0 +1,11 @@
+<h1>Communities</h1>
+<a href="{% url 'create-community' %}">Create New Community</a>
+<ul>
+    {% for community in communities %}
+        <li>
+            <a href="{% url 'community-detail' community.id %}">{{ community.title }}</a>
+            <a href="{% url 'edit-community' community.id %}">Edit</a>
+            <a href="{% url 'delete-community' community.id %}">Delete</a>
+        </li>
+    {% endfor %}
+</ul>

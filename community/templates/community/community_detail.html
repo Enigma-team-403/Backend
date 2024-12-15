@@ -1,0 +1,10 @@
+<!-- community_detail.html -->
+<h1>{{ community.title }}</h1>
+<p>{{ community.description }}</p>
+
+<h2>Users in this community:</h2>
+<ul>
+  {% for user in community.users.all %}
+    <li>{{ user.username }} ({{ user.email }})</li>
+  {% endfor %}
+</ul>
