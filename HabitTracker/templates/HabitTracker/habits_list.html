@@ -1,0 +1,68 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Habit Tracker - List</title>
+</head>
+<body>
+    <h1>List of Habits</h1>
+    <ul>
+        {% for item in habits_with_progress %}
+            <li>
+                <strong>{{ item.habit.name }}</strong> (ID: {{ item.habit.id }}) - {{ item.habit.description }}
+                <ul>
+                    {% for progress in item.daily_progress %}
+                        <li>
+                            <form method="POST" action="{% url 'habits-list' %}">
+                                {% csrf_token %}
+                                <label>
+                                    <input type="checkbox" 
+                                           class="progress-checkbox"
+                                           name="progress_id" 
+                                           value="{{ progress.id }}" 
+                                           {% if progress.completed %}checked{% endif %}
+                                           data-habit-id="{{ item.habit.id }}"
+                                           data-date="{{ progress.date }}"
+                                           onchange="this.form.submit();">
+                                    {{ progress.date }}
+                                </label>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        // Handle checkbox changes with AJAX
+        document.querySelectorAll('.progress-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const habitId = this.getAttribute('data-habit-id');
+                const date = this.getAttribute('data-date');
+                const csrfToken = '{{ csrf_token }}';
+
+                fetch('/update-progress/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        habit_id: habitId,
+                        date: date,
+                        completed: this.checked
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update progress display (if needed)
+                        document.getElementById(`progress-${habitId}`).textContent = data.progress.toFixed(2);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

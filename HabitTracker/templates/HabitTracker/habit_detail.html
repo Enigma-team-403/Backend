@@ -1,0 +1,17 @@
+{% block content %}
+  <h1>{{ habit.name }}</h1>
+  <p>{{ habit.description }}</p>
+  <p>Duration: {{ habit.duration }} days</p>
+  <p>Goal: Complete {{ habit.goal }} days</p>
+  <p>Progress: {{ progress_percentage }}%</p>  <!-- Show the current progress -->
+
+  <h2>Daily Progress</h2>
+  <ul>
+    {% for progress in daily_progress %}
+      <li>
+        <p>{{ progress.date }} - {% if progress.completed %}Completed{% else %}Not Completed{% endif %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+  
+{% endblock %} 
