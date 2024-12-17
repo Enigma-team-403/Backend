@@ -58,18 +58,16 @@ class CommunityFilter(FilterSet):
 class CommunityViewSet(viewsets.ModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
-    # permission_classes = [permissions.IsAuthenticated] 
+    # permission_classes = [IsAuthenticated] 
     
     filter_backends = [DjangoFilterBackend] 
     filterset_class = CommunityFilter
-    # renderer_classes = [JSONRenderer] 
     search_fields = ['title']
     filterset_fields = ['category']
 
 
 
     def perform_create(self, serializer):
-        # # ما فرض می‌کنیم که همیشه یک کاربر وارد شده است
         # user = User.objects.first()  # در اینجا می‌توانید کاربر پیش‌فرض را تنظیم کنید
         # if not Habit.objects.filter(user=user).exists():
         #     raise serializer.ValidationError({"detail": "You need to create at least one habit before creating a community."})
@@ -312,7 +310,24 @@ class UserMembershipRequestsView(APIView):
         serializer = MembershipRequestSerializer(membership_requests, many=True)
         return Response(serializer.data)
 
+class MembershipRequestViewSet(viewsets.ModelViewSet):
+    queryset = MembershipRequest.objects.all()
+    serializer_class = MembershipRequestSerializer
+    # permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        # برگرداندن درخواست‌های عضویت برای کاربر فعلی
+        return self.queryset.filter(requester=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        # اضافه کردن کاربر فعلی به درخواست عضویت
+        data = request.data.copy()
+        data['requester'] = request.user.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 
