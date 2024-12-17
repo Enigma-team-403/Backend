@@ -94,13 +94,16 @@ def habit_delete_view(request, pk):
 class HabitViewSet(viewsets.ModelViewSet):
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        return Habit.objects.filter(user=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=None)  # به جای کاربر وارد شده، مقدار None را برای user ذخیره می‌کنیم
+
+    # def get_queryset(self):
+    #     return Habit.objects.filter(user=self.request.user)
 
 class UserHabitViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
         user_habits = Habit.objects.filter(user=request.user)
