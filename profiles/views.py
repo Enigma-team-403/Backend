@@ -5,17 +5,14 @@ from rest_framework.decorators import action
 from .models import Profile
 from .serializers import ProfileSerializer
 from rest_framework.permissions import IsAuthenticated
-from django.conf import settings
 
 class ProfileViewSet(viewsets.ModelViewSet):
-
     # queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        new_user= settings.AUTH_USER_MODEL.objects.get(id = self.request.user.id)
-        return Profile.objects.filter(user_id=new_user)
+        return Profile.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

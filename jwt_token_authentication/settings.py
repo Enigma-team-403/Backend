@@ -35,21 +35,20 @@ ALLOWED_HOSTS = ['shadizargar.pythonanywhere.com','127.0.0.1','root']
 AUTH_USER_MODEL = 'members.User'
 
 
-# Application definition
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_METHODS = ('*', )
-CORS_ALLOW_HEADERS = [
-'accept',
-'accept-encoding',
-'authorization',
-'content-type',
-'dnt',
-'origin',
-'user-agent',
-'x-csrftoken',
-'x-requested-with',
-]
+# # Application definition
+# CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_METHODS = ('*', )
+# CORS_ALLOW_HEADERS = [
+# 'accept',
+# 'accept-encoding',
+# 'authorization',
+# 'content-type',
+# 'dnt',
+# 'origin',
+# 'user-agent',
+# 'x-csrftoken',
+# 'x-requested-with',
+# ]
 
 
 
@@ -83,6 +82,8 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',  # یا هر نسخه دیگری از Bootstrap که استفاده می‌کنید
 
     ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"  # یا هر نسخه‌ای که استفاده می‌کنید
 CRISPY_TEMPLATE_PACK = "bootstrap5"
@@ -161,13 +162,13 @@ SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'corsheaders.middleware.CorsMidleware',
-    'corsheaders.middleware.CorsMiddleware',
 
 
 
