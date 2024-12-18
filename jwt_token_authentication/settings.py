@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 import os
 
+from django.conf import settings
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,15 +58,29 @@ INSTALLED_APPS = [
     'HabitTracker',
     'crispy_forms',
     'plyer',
+    
+    'rest_framework_simplejwt',
+    'django_filters',
+    # 'rest_framework_simplejwt',
+    'todo',
+    'profiles',
+    'community',
 
+    'crispy_bootstrap5',  # یا هر نسخه دیگری از Bootstrap که استفاده می‌کنید
 
     ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"  # یا هر نسخه‌ای که استفاده می‌کنید
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173'
 ]
 
 REST_FRAMEWORK = {
+        'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
@@ -79,13 +95,36 @@ REST_FRAMEWORK = {
     ]
 }
 
+
 SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS': False,  # آیا توکن بازآوری باید چرخشی باشد یا خیر
+    'BLACKLIST_AFTER_ROTATION': True,  # آیا بعد از چرخش توکن‌ها باید بلاک شوند یا خیر
+
+    'ALGORITHM': 'HS256',  # الگوریتم رمزنگاری
+    'SIGNING_KEY': settings.SECRET_KEY,  # کلید امضا
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),  # نوع هدر احراز هویت
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+
     'USER_ID_FIELD': 'user_id',  # Ensure this is set to 'user_id'
     'USER_ID_CLAIM': 'user_id',  # The key in the payload
     'ACCESS_TOKEN_LIFETIME': timedelta(days=5),  # Example: Increase to 15 minutes
     'REFRESH_TOKEN_LIFETIME': timedelta(days=5),
 }
-
 
 
 

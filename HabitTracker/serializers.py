@@ -5,7 +5,7 @@ from .models import Habit
 class HabitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Habit
-        fields = ['name', 'description', 'duration', 'progress']
+        fields = ['id' ,'name', 'description', 'duration', 'progress']
 
     # Optionally, add validation for the duration field
     def validate_duration(self, value):

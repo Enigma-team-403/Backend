@@ -3,7 +3,7 @@ from rest_framework import viewsets, permissions
 from .models import Community, Category ,MembershipRequest
 from .serializers import CommunitySerializer, DetailsSerializer, HabitSerializer,MembershipRequestSerializer, ApproveMembershipRequestSerializer,AddMemberSerializer,CategorySerializer
 from HabitTracker.models import Habit
-from rest_framework.decorators import action , api_view
+from rest_framework.decorators import action , api_view ,permission_classes
 from rest_framework.response import Response
 from HabitTracker.serializers import HabitSerializer
 from rest_framework import status
@@ -21,7 +21,6 @@ from .filters import CommunityFilter
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -58,7 +57,7 @@ class CommunityFilter(FilterSet):
 class CommunityViewSet(viewsets.ModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
-    # permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated] 
     
     filter_backends = [DjangoFilterBackend] 
     filterset_class = CommunityFilter
@@ -281,7 +280,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Membership request not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class UserHabitViewSet(viewsets.ViewSet):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer
@@ -313,7 +312,7 @@ class UserMembershipRequestsView(APIView):
 class MembershipRequestViewSet(viewsets.ModelViewSet):
     queryset = MembershipRequest.objects.all()
     serializer_class = MembershipRequestSerializer
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # برگرداندن درخواست‌های عضویت برای کاربر فعلی
@@ -332,6 +331,7 @@ class MembershipRequestViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def send_membership_request(request):
     if request.method == 'POST':
         serializer = MembershipRequestSerializer(data=request.data)
@@ -362,6 +362,7 @@ def send_membership_request(request):
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def view_membership_requests(request, community_id):
     if request.method == 'POST':
         try:
@@ -391,6 +392,7 @@ def view_membership_requests(request, community_id):
     return HttpResponse(html_form)
 
 @api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def manage_membership_request(request, community_id):
     if request.method == 'POST':
         serializer = ApproveMembershipRequestSerializer(data=request.data)

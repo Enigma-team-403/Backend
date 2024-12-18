@@ -4,6 +4,11 @@ from django.urls import reverse
 from django.utils import timezone  # Import timezone
 from datetime import timedelta  # Import timedelta
 from .models import Habit, DailyProgress
+from rest_framework import viewsets, permissions
+from .models import Habit
+from .serializers import HabitSerializer
+from rest_framework.response import Response
+
 
 def habits_list_view(request):
     habits = Habit.objects.all()
@@ -82,3 +87,25 @@ def habit_delete_view(request, pk):
         habit.delete()
         return redirect('habits-list')  # Redirect to habit list view
     return render(request, 'HabitTracker/habit_detail.html', {'habit': habit})
+
+
+
+
+class HabitViewSet(viewsets.ModelViewSet):
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user) # ذخیره کاربر وارد شده # به جای کاربر وارد شده، مقدار None را برای user ذخیره می‌کنیم
+
+    def get_queryset(self):
+        return Habit.objects.filter(user=self.request.user)
+
+class UserHabitViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        user_habits = Habit.objects.filter(user=request.user)
+        serializer = HabitSerializer(user_habits, many=True)
+        return Response(serializer.data)
