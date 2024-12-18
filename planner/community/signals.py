@@ -4,12 +4,6 @@ from .models import Category
 
 @receiver(post_migrate)
 def create_default_categories(sender, **kwargs):
-    default_categories = ['work', 'science', 'social', 'sport']
-    for category in default_categories:
-<<<<<<< HEAD
-        Category.objects.get_or_create(name=category)
-
-
-=======
-        Category.objects.get_or_create(name=category)
->>>>>>> backendWithoutToken
+        default_categories = ['work', 'science', 'social', 'sport']
+        for category in default_categories:
+                Category.objects.get_or_create(name=category)

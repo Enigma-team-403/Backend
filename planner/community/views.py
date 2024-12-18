@@ -1,34 +1,3 @@
-<<<<<<< HEAD
-from urllib import response
-from rest_framework import viewsets, permissions
-from .models import Community, Category, Habit
-from .serializers import CommunitySerializer, CategorySerializer, HabitSerializer
-from rest_framework.response import Response
-from rest_framework import status
-
-
-class CommunityViewSet(viewsets.ModelViewSet):
-    queryset = Community.objects.all()
-    serializer_class = CommunitySerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Community.objects.filter(user=self.request.user)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response({
-            'community': serializer.data,
-            'communities': CommunitySerializer(self.get_queryset(), many=True).data
-        }, status=status.HTTP_201_CREATED, headers=headers)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-=======
 from requests import Response
 from rest_framework import viewsets, permissions
 from .models import Community, Category ,MembershipRequest
@@ -54,20 +23,10 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 
 
->>>>>>> backendWithoutToken
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-<<<<<<< HEAD
-class UserHabitViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def list(self, request):
-        habits = Habit.objects.filter(user=request.user)
-        serializer = HabitSerializer(habits, many=True)
-        return response(serializer.data)
-=======
     @action(detail=False, methods=['get'], url_path='list-Category')    
     def list_tags(self, request):
         categories = self.queryset.all()
@@ -375,28 +334,13 @@ class MembershipRequestViewSet(viewsets.ModelViewSet):
 @api_view(['GET', 'POST'])
 def send_membership_request(request):
     if request.method == 'POST':
-        community_id = request.data.get('community_id')
-        requester_id = request.data.get('requester_id')
-        serializer = MembershipRequestSerializer(data={'community_id': community_id, 'requester_id': requester_id})
-
+        serializer = MembershipRequestSerializer(data=request.data)
         if serializer.is_valid():
-            community_id = serializer.validated_data['community_id']
-            requester_id = serializer.validated_data['requester_id']
-            try:
-                community = Community.objects.get(id=community_id)
-                requester = User.objects.get(id=requester_id)
-                if MembershipRequest.objects.filter(community=community, requester=requester).exists():
-                    return Response({"detail": "Membership request already exists."}, status=status.HTTP_400_BAD_REQUEST)
-                membership_request = MembershipRequest.objects.create(community=community, requester=requester)
-                response_serializer = MembershipRequestSerializer(membership_request)
-                return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-            except Community.DoesNotExist:
-                return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
-            except User.DoesNotExist:
-                return Response({"detail": "Requester not found."}, status=status.HTTP_404_NOT_FOUND)
+            membership_request = serializer.save()
+            response_serializer = MembershipRequestSerializer(membership_request)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    # نمایش فرم HTML برای متد GET
     html_form = '''
         <html>
         <head>
@@ -415,7 +359,6 @@ def send_membership_request(request):
         </html>
     '''
     return HttpResponse(html_form)
-
 
 
 @api_view(['GET', 'POST'])
@@ -495,4 +438,3 @@ def manage_membership_request(request, community_id):
         </html>
     '''
     return HttpResponse(html_form)
->>>>>>> backendWithoutToken

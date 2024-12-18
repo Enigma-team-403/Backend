@@ -1,36 +1,17 @@
 from rest_framework import serializers
-<<<<<<< HEAD
-from .models import Community, Category, Habit
-=======
 from .models import Community, Category , MembershipRequest
 from HabitTracker.models import Habit
 from django.contrib.auth.models import User # افزودن مدل User
->>>>>>> backendWithoutToken
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-<<<<<<< HEAD
-        fields = ('id', 'name')
-=======
         fields = '__all__'
 
->>>>>>> backendWithoutToken
 
 class HabitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Habit
-<<<<<<< HEAD
-        fields = ('id', 'name', 'description', 'user')
-
-class CommunitySerializer(serializers.ModelSerializer):
-    category_ids = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), source='categories', many=True)
-    habit_ids = serializers.PrimaryKeyRelatedField(queryset=Habit.objects.all(), source='habits', many=True)
-
-    class Meta:
-        model = Community
-        fields = ('id', 'title', 'description', 'create_time', 'category_ids', 'habit_ids', 'profile_picture')
-=======
         fields ='__all__'
 
 
@@ -45,30 +26,23 @@ class CommunitySerializer(serializers.ModelSerializer):
         model = Community
         fields =  ['id','user', 'title', 'description','categories','habits']  
         
-    # def create(self, validated_data):
-    #     user = User.objects.first()  # تنظیم کاربر پیش‌فرض
-    #     categories_data = validated_data.pop('categories', [])
-    #     community = Community.objects.create(user=user, **validated_data)
-    #     community.categories.set(categories_data)
-    #     return community
->>>>>>> backendWithoutToken
 
-    def validate_category_ids(self, value):
-        if len(value) > 2:
-            raise serializers.ValidationError("You can select a maximum of 2 categories.")
+    def validate_categories(self, value): 
+        if len(value) != 1: 
+            raise serializers.ValidationError("You must select exactly one category.") 
+        return value
+
+    def validate_habits(self, value): 
+        if len(value) > 2: 
+            raise serializers.ValidationError("You can select a maximum of 2 habits.") 
         return value
 
     def create(self, validated_data):
         categories_data = validated_data.pop('categories')
-<<<<<<< HEAD
-        habits_data = validated_data.pop('habits')
-        community = Community.objects.create(**validated_data)
-=======
         members_data = validated_data.pop('members', [])
         habits_data = validated_data.pop('habits')
         community = Community.objects.create(**validated_data)
         community.members.set(members_data)
->>>>>>> backendWithoutToken
         community.categories.set(categories_data)
         community.habits.set(habits_data)
         return community
@@ -84,9 +58,6 @@ class CommunitySerializer(serializers.ModelSerializer):
 
         instance.categories.set(categories_data)
         instance.habits.set(habits_data)
-<<<<<<< HEAD
-        return instance
-=======
         return instance
     
     
@@ -95,10 +66,31 @@ class CommunitySerializer(serializers.ModelSerializer):
 class MembershipRequestSerializer(serializers.ModelSerializer):
     community_id = serializers.IntegerField(write_only=True, required=True)
     requester_id = serializers.IntegerField(write_only=True, required=True)
+    community = serializers.PrimaryKeyRelatedField(read_only=True) 
+    requester = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = MembershipRequest
         fields = ['id', 'community', 'community_id', 'requester', 'requester_id', 'status', 'created_at']        
         read_only_fields = ['id', 'status', 'created_at']   
+
+    
+
+    def create(self, validated_data):
+        community_id = validated_data.pop('community_id')
+        requester_id = validated_data.pop('requester_id')
+        try:
+            community = Community.objects.get(id=community_id)
+            requester = User.objects.get(id=requester_id)
+        except Community.DoesNotExist:
+            raise serializers.ValidationError({"community_id": "Community not found."})
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"requester_id": "Requester not found."})
+        
+        if MembershipRequest.objects.filter(community=community, requester=requester).exists():
+            raise serializers.ValidationError({"detail": "Membership request already exists."})
+
+        membership_request = MembershipRequest.objects.create(community=community, requester=requester)
+        return membership_request
 
 
 class ApproveMembershipRequestSerializer(serializers.Serializer): 
@@ -126,4 +118,3 @@ class AddMemberSerializer(serializers.Serializer):
     
     
     
->>>>>>> backendWithoutToken
