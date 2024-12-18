@@ -1,4 +1,4 @@
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets,permissions
 from .models import Task, SubTask, Comment ,List ,Tag, TaskTag
 from .serializers import TaskSerializer, SubTaskSerializer, CommentSerializer ,ListSerializer ,TaskTagSerializer, TagSerializer
 from rest_framework.decorators import action
@@ -8,8 +8,9 @@ from django.utils.dateparse import parse_date
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_by_tag(self, request):
         tag_name = request.query_params.get('tag', None)
         if tag_name:
@@ -20,7 +21,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(tasks, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])    
     def filter_by_month(self, request):
         date_str = request.query_params.get('month', None)
         if date_str:
@@ -36,7 +37,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])    
     def search(self, request):
         query = request.query_params.get('task', None)
         if query:
@@ -68,8 +69,9 @@ class SubTaskViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def add_comment(self, request, pk=None):
         try:
             task = Task.objects.get(pk=pk)
@@ -88,8 +90,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=False, methods=['get'], url_path='list-tags')    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated], url_path='list-tags')    
     def list_tags(self, request):
         tags = self.queryset.all()
         serializer = self.get_serializer(tags, many=True)
@@ -99,8 +102,9 @@ class TagViewSet(viewsets.ModelViewSet):
 class TaskTagViewSet(viewsets.ModelViewSet):
     queryset = TaskTag.objects.all()
     serializer_class = TaskTagSerializer
-
+    permission_classes = [permissions.IsAuthenticated]
+    
 class ListViewSet(viewsets.ModelViewSet):
     queryset = List.objects.all()
     serializer_class = ListSerializer
-
+    permission_classes = [permissions.IsAuthenticated]
