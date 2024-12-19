@@ -75,7 +75,7 @@ INSTALLED_APPS = [
     'plyer',
     'channels',
     'chat',
-    
+    'echo',    
 
 
     ]
