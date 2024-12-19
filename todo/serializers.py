@@ -1,5 +1,10 @@
 from rest_framework import serializers
 from .models import Task, SubTask , Comment ,Tag, TaskTag, List
+from django.contrib.auth.models import User # افزودن مدل User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 class SubTaskSerializer(serializers.ModelSerializer):
     task = serializers.PrimaryKeyRelatedField(queryset=Task.objects.all())
@@ -59,7 +64,7 @@ class TaskSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop('tags', [])
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
-        instance.note = validated_data.get('note', instance.note)
+        instance.note = validated_data.get('note', instance.Note)
         instance.completed = validated_data.get('completed', instance.completed)
         instance.priority = validated_data.get('priority', instance.priority)
         instance.create_time = validated_data.get('create_time', instance.create_time)

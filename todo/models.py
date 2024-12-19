@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
 
 class List(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
@@ -10,7 +11,6 @@ class List(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        
         return self.title
 
 
@@ -61,6 +61,7 @@ class Comment(models.Model):
     
 
 class TaskTag(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
     task = models.ForeignKey(Task, related_name='task_tags', on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, related_name='task_tags', on_delete=models.CASCADE)
 
