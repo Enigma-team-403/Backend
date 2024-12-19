@@ -4,6 +4,7 @@ from .models import Task, SubTask , Comment ,Tag, TaskTag, List
 class SubTaskSerializer(serializers.ModelSerializer):
     task = serializers.PrimaryKeyRelatedField(queryset=Task.objects.all())
     list = serializers.SerializerMethodField()
+    user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = SubTask
@@ -36,6 +37,7 @@ class TaskSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True)
     tags = TagSerializer(source='task_tags.tag', many=True, read_only=True)
     list = serializers.PrimaryKeyRelatedField(queryset=List.objects.all())
+    user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = Task
@@ -86,6 +88,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class ListSerializer(serializers.ModelSerializer):
     tasks = TaskSerializer(many=True, read_only=True)
+    user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = List

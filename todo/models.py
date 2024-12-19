@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 class List(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
     id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
@@ -21,6 +23,7 @@ class Tag(models.Model):
 
 
 class Task(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     list = models.ForeignKey(List, related_name='tasks', on_delete=models.CASCADE)
     id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=200)
@@ -39,6 +42,7 @@ class Task(models.Model):
 
 
 class SubTask(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
     task = models.ForeignKey(Task, related_name='subtasks', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)

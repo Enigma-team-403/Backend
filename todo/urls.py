@@ -16,4 +16,9 @@ urlpatterns = [
     path('tags/list_tags/', TagViewSet.as_view({'get': 'list_tags'}), name='list-tags'),
     path('tasks/search/', TaskViewSet.as_view({'get': 'search'}), name='task-search'),
     path('tasks/filter_by_month/', TaskViewSet.as_view({'get': 'filter_by_month'}), name='task-filter-by-month'),
+    path('tasks/<int:pk>/edit/', TaskViewSet.as_view({'put': 'edit'}), name='task-edit'),
+    path('subtasks/<int:pk>/edit/', SubTaskViewSet.as_view({'put': 'edit'}), name='subtask-edit'),
+    path('lists/<int:pk>/edit/', ListViewSet.as_view({'put': 'edit'}), name='list-edit'),
 ]
+
+

@@ -4,11 +4,19 @@ from .serializers import TaskSerializer, SubTaskSerializer, CommentSerializer ,L
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils.dateparse import parse_date
+from django.conf import settings
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    
+    def perform_create(self, serializer): 
+        serializer.save(user=self.request.user) 
+    def perform_update(self, serializer): 
+        serializer.save(user=self.request.user)
+
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_by_tag(self, request):
@@ -48,11 +56,22 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         return Response(results)
 
+    @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
+    def edit(self, request, pk=None):
+        task = self.get_object()
+        serializer = self.get_serializer(task, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class SubTaskViewSet(viewsets.ModelViewSet):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False, methods=['get'])
     def search(self, request):
@@ -64,6 +83,17 @@ class SubTaskViewSet(viewsets.ModelViewSet):
             results = []
 
         return Response(results)
+
+    @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
+    def edit(self, request, pk=None):
+        subtask = self.get_object()
+        serializer = self.get_serializer(subtask, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -108,3 +138,13 @@ class ListViewSet(viewsets.ModelViewSet):
     queryset = List.objects.all()
     serializer_class = ListSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
+    def edit(self, request, pk=None):
+        list_instance = self.get_object()
+        serializer = self.get_serializer(list_instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

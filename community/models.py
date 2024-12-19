@@ -14,7 +14,6 @@ class Category(models.Model):
 class Community(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True,blank=True)
-    # user = models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
@@ -27,13 +26,6 @@ class Community(models.Model):
     def __str__(self):
         return self.title
     
-# class Habit(models.Model):
-#     name = models.CharField(max_length=100)
-#     description = models.TextField(blank=True, null=True)
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='habits')
-#     creat_time = models.DateTimeField(auto_now_add=True)
-#     def __str__(self):
-#         return self.name
 
 
 class MembershipRequest(models.Model):
@@ -45,3 +37,13 @@ class MembershipRequest(models.Model):
 
     def __str__(self):
         return f"Request from {self.requester} to {self.community.name} ({self.status})"
+    
+    
+# class Habit(models.Model):
+#     name = models.CharField(max_length=100)
+#     description = models.TextField(blank=True, null=True)
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='habits')
+#     creat_time = models.DateTimeField(auto_now_add=True)
+#     def __str__(self):
+#         return self.name
+    

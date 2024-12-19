@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Community, Category , MembershipRequest
 from HabitTracker.models import Habit
 from django.contrib.auth.models import User # افزودن مدل User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,14 +20,12 @@ class HabitSerializer(serializers.ModelSerializer):
 
 class CommunitySerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    habits = HabitSerializer(many=True)  # نمایش جزئیات هبیت‌ها
-
     habits = serializers.PrimaryKeyRelatedField(queryset=Habit.objects.all(), many=True)
     categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True)
-    
+    members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True, required=False)
     class Meta:
         model = Community
-        fields =  ['id','user', 'title', 'description','categories','habits']  
+        fields =  ['id','user', 'title', 'description','categories','habits','members']  
         
 
     def validate_categories(self, value): 
