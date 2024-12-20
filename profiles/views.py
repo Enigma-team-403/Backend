@@ -1,5 +1,5 @@
 from django.forms import ValidationError
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Profile
@@ -15,8 +15,13 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return Profile.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
+        if Profile.objects.filter(user=self.request.user).exists(): 
+            return Response({"detail": "شما نمی‌توانید بیش از یک پروفایل ایجاد کنید."}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save(user=self.request.user)
 
+    def perform_update(self, serializer): 
+        serializer.save(user=self.request.user)
+        
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_profile(self, request):
         # نمایش پروفایل کاربر واردشده
@@ -27,32 +32,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+    
+    @action(detail=True, methods=['put'], permission_classes=[IsAuthenticated])
+    def edit_profile(self, request, pk=None):
+        profile = self.get_object()
+        serializer = self.get_serializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# from rest_framework import viewsets
-# from rest_framework.decorators import action
-# from rest_framework.response import Response
-# from django.contrib.auth.models import User  # اضافه کردن مدل User
-# from .models import Profile
-# from .serializers import ProfileSerializer
 
-# class ProfileViewSet(viewsets.ModelViewSet):
-#     queryset = Profile.objects.all()
-#     serializer_class = ProfileSerializer
-
-#     def get_queryset(self):
-#         # برگرداندن تمامی پروفایل‌ها بدون احراز هویت
-#         return Profile.objects.all()
-
-#     def perform_create(self, serializer):
-#         # تنظیم کاربر پیش‌فرض به جای self.request.user
-#         user = User.objects.first()  # در اینجا می‌توانید کاربر پیش‌فرض را تنظیم کنید
-#         serializer.save(user=user)
-
-#     @action(detail=False, methods=['get'])
-#     def my_profile(self, request):
-#         # نمایش اولین پروفایل موجود در سیستم
-#         profile = self.get_queryset().first()
-#         if not profile:
-#             return Response({"detail": "پروفایلی یافت نشد."}, status=404)
-#         serializer = self.get_serializer(profile)
-#         return Response(serializer.data)
