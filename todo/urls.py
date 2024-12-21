@@ -23,4 +23,5 @@ urlpatterns = [
     path('tasks/<int:pk>/edit/', TaskViewSet.as_view({'put': 'edit'}), name='task-edit'),
     path('subtasks/<int:pk>/edit/', SubTaskViewSet.as_view({'put': 'edit'}), name='subtask-edit'),
     path('lists/<int:pk>/edit/', ListViewSet.as_view({'put': 'edit'}), name='list-edit'),
+
 ]

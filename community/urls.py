@@ -31,6 +31,5 @@ urlpatterns = [
     path('communities/<int:pk>/delete/', CommunityViewSet.as_view({'delete': 'destroy'}), name='community-delete'),  # حذف یک کامیونیتی
     path('communities/<int:pk>/', CommunityViewSet.as_view({'get': 'retrieve'}), name='community-retrieve'),  # دریافت جزئیات یک کامیونیتی
     
-    path('create-community/', create_community_view, name='create-community')
-]
+    path('create-community/', create_community_view, name='create-community'),]
 
