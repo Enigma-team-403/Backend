@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Habit Details</title>
+</head>
+<body>
+    <h1>Habit Details</h1>
+    <p><strong>Name:</strong> {{ habit.name }}</p>
+    <p><strong>Description:</strong> {{ habit.description }}</p>
+    <p><strong>Duration:</strong> {{ habit.duration }} days</p>
+    <p><strong>Progress:</strong> {{ progress_percentage }}%</p>
+
+    <h2>Topic</h2>
+    <p><strong>Current Topic:</strong> {{ habit.topic|default:"No topic set" }}</p>
+    <form method="POST" action="">
+      {% csrf_token %}
+      <div>
+          <label for="topic">Topic:</label>
+          <input type="text" id="topic" name="topic" value="{{ habit.topic }}">
+      </div>
+      <div>
+          <label for="section">Section:</label>
+          <select id="section" name="section">
+              {% for option in sections %}
+                  <option value="{{ option }}" {% if habit.section == option %}selected{% endif %}>
+                      {{ option }}
+                  </option>
+              {% endfor %}
+          </select>
+      </div>
+      <button type="submit">Update Details</button>
+    </form>
+  
+
+    <h2>Daily Progress</h2>
+    <ul>
+        {% for progress in daily_progress %}
+            <li>
+                <form method="POST" action="" class="progress-form">
+                    {% csrf_token %}
+                    <label>
+                        <input type="checkbox"
+                               name="progress"
+                               data-date="{{ progress.date }}"
+                               {% if progress.completed %}checked{% endif %}
+                               onchange="this.form.submit();">
+                        {{ progress.date }}
+                    </label>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'habits-list' %}">Back to List</a>
+</body>
+</html>

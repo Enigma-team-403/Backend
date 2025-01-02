@@ -1,0 +1,9 @@
+<!-- habit_delete_confirm.html -->
+<h1>Are you sure you want to delete this habit?</h1>
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">Yes, delete this habit</button>
+</form>
+<a href="{% url 'habits-list' %}">Cancel</a>
+
+
