@@ -1,7 +1,7 @@
 from requests import Response
 from rest_framework import viewsets, permissions
 from .models import Community, Category ,MembershipRequest
-from .serializers import CommunitySerializer, DetailsSerializer, HabitSerializer,MembershipRequestSerializer, ApproveMembershipRequestSerializer,AddMemberSerializer,CategorySerializer
+from .serializers import CommunitySerializer, DetailsSerializer, HabitSerializer,MembershipRequestSerializer, ApproveMembershipRequestSerializer,AddMemberSerializer,CategorySerializer,CommunityMemberSerializer
 from HabitTracker.models import Habit
 from rest_framework.decorators import action , api_view ,permission_classes
 from rest_framework.response import Response
@@ -22,6 +22,7 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+import requests
 
 User = get_user_model()
 
@@ -70,6 +71,8 @@ class CommunityViewSet(viewsets.ModelViewSet):
 
 
 
+
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)  # اینجا کاربر را تنظیم می‌کنیم
 
@@ -83,12 +86,9 @@ class CommunityViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def list(self, request, *args, **kwargs):
-        communities = Community.objects.filter(user=request.user)
-        serializer = self.get_serializer(communities, many=True)        
-        
-        for community in serializer.data:
-            community['compage_url'] = f"/compage/community/{community['id']}/"
-        return Response(serializer.data)        
+        communities = Community.objects.all()
+        serializer = self.get_serializer(communities, many=True)
+        return Response(serializer.data)    
     
     @action(detail=True, methods=['get', 'post'], permission_classes=[permissions.IsAuthenticated])
     def linked_habits(self, request, pk=None):
@@ -136,44 +136,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])#, permission_classes=[permissions.IsAuthenticated])
     def add_habits(self, request, pk=None):
-        community = self.get_object() 
-        # user = request.user  # گرفتن کاربر فعلی
-        # user_habits = Habit.objects.filter(user=user)
-        
-        # if not user_habits.exists():
-        #     create_habit = request.data.get('create_habit', None)
-        #     if create_habit is None:
-        #         return Response(
-        #             {"detail": "You need to create at least one habit before adding to a community. Do you want to create a habit?"},
-        #             status=status.HTTP_400_BAD_REQUEST
-        #         )
-            
-        #     if create_habit.lower() == "yes":
-        #         habit_name = request.data.get('habit_name', None)
-        #         if not habit_name:
-        #             return Response(
-        #                 {"detail": "Please provide a name for your new habit."},
-        #                 status=status.HTTP_400_BAD_REQUEST
-        #             )
-                
-        #         new_habit = Habit.objects.create(user=user, name=habit_name, description="Your new habit", duration=30, goal=10)
-        #         user_habits = Habit.objects.filter(user=user)  # به‌روزرسانی لیست هبیت‌های کاربر
-        #         return Response(
-        #             {"detail": f"New habit '{habit_name}' created. You can now add it to the community."},
-        #             status=status.HTTP_201_CREATED
-        #         )
-        #     else:
-        #         return Response(
-        #             {"detail": "You need to create at least one habit before adding to a community."},
-        #             status=status.HTTP_400_BAD_REQUEST
-        #         )
-
-        # if community.external_habits.count() >= 2:
-        #     return Response(
-        #         {"detail": "You can add a maximum of 2 habits to the community."},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        
+        community = self.get_object()         
         habit_ids = request.data.get('habit_ids', [])
         habits_to_add = Habit.objects.filter(id__in=habit_ids, user=request.user)
         if len(habits_to_add) != len(habit_ids): 
@@ -181,17 +144,6 @@ class CommunityViewSet(viewsets.ModelViewSet):
         community.habits.add(*habits_to_add) 
         return Response({"detail": "Habits added successfully."}, status=status.HTTP_200_OK)
         
-        
-        # if habits_to_add.count() != len(habit_ids):
-        #     return Response(
-        #         {"detail": "You can only add your own habits."},
-        #         status=status.HTTP_400_BAD_REQUEST
-        #     )
-        # community.external_habits.add(*habits_to_add)
-        # serializer = HabitSerializer(community.external_habits.all(), many=True)
-        # return Response(serializer.data, status=status.HTTP_200_OK)    
-
-    #============ SHADI's codes ===============
 
     @action(detail=True, methods=['GET', 'PUT'])
     def details(self, request, pk=None):
@@ -210,51 +162,24 @@ class CommunityViewSet(viewsets.ModelViewSet):
     def add_members(self, request, pk=None):
         community = self.get_object()
         user_id = request.data.get('user_id')
-        print(f"User ID received: {user_id}") 
+        print(f"User ID received: {user_id}")
         try:
-            user = User.objects.get(id=user_id)
-            print(f"User found: {user}") 
+            user = User.objects.get(user_id=user_id)
+            print(f"User found: {user}")
         except User.DoesNotExist:
+            print("User not found.")
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        community.members.add(user)
-        return Response({"detail": "Member added successfully."}, status=status.HTTP_200_OK)
+        membership_request = MembershipRequest.objects.create(community=community, requester=user,status='pending' )
+        return Response({"detail": "Membership request sent successfully."}, status=status.HTTP_201_CREATED)
+        # community.members.add(user)
+        # return Response({"detail": "Member added successfully."}, status=status.HTTP_200_OK)
         
-        # if request.method == 'POST':
-        #     serializer = AddMemberSerializer(data=request.data)
-        #     if serializer.is_valid():
-        #         user_id = serializer.validated_data['user_id']
-            #     try:
-            #         user = User.objects.get(id=user_id)
-            #         community.members.add(user)
-            #         return Response({"detail": "Member added successfully."}, status=status.HTTP_201_CREATED)
-            #     except User.DoesNotExist:
-            #         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-            # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        # نمایش فرم HTML برای متد GET
-        html_form = '''
-            <html>
-            <head>
-                <title>Add Members</title>
-            </head>
-            <body>
-                <h1>Add Members</h1>
-                <form method="post">
-                    <label for="user_id">User ID:</label><br>
-                    <input type="number" id="user_id" name="user_id" required><br><br>
-                    <button type="submit">Add Member</button>
-                </form>
-            </body>
-            </html>
-        '''
-        return HttpResponse(html_form)
 
     @action(detail=True, methods=['get'])
     def membership_requests(self, request, pk=None):
         community = self.get_object()
         user = request.user
-
         # تشخیص سازنده‌ی کامیونیتی بدون نیاز به احراز هویت
         if community.user and community.user != user:
             return Response({"detail": "Only the community admin can view membership requests."}, status=status.HTTP_403_FORBIDDEN)
@@ -268,25 +193,115 @@ class CommunityViewSet(viewsets.ModelViewSet):
         community = self.get_object()
         user = request.user
         request_id = request.data.get('request_id')
-
+        selected_habit_id = request.data.get('selected_habit_id')
         # تشخیص سازنده‌ی کامیونیتی بدون نیاز به احراز هویت
         if community.user and community.user != user:
             return Response({"detail": "Only the community admin can accept membership requests."}, status=status.HTTP_403_FORBIDDEN)
 
         try:
             membership_request = MembershipRequest.objects.get(id=request_id, community=community)
+            selected_habit = Habit.objects.get(id=selected_habit_id)
             membership_request.status = 'accepted'
+            membership_request.selected_habit = selected_habit
             membership_request.save()
 
             community.members.add(membership_request.requester)
             return Response({"detail": "Membership request accepted and user added to community."}, status=status.HTTP_200_OK)
         except MembershipRequest.DoesNotExist:
             return Response({"detail": "Membership request not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Habit.DoesNotExist:
+            return Response({"detail": "Selected habit not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        community = self.get_object()
+        members = community.members.all()
+        serializer = CommunityMemberSerializer(members, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def member_progress(self, request, pk=None):
+        community = self.get_object()
+        members = community.members.all()
+        response_data = []
+
+        for member in members:
+            habits = member.tracker_habits.all()
+            habit_data = []
+
+            for habit in habits:
+                daily_progress = habit.daily_progress.all()
+                completed_days = daily_progress.filter(completed=True).count()
+                progress_percentage = (completed_days / habit.duration) * 100 if habit.duration > 0 else 0
+                habit_data.append({
+                    'habit_id': habit.id,
+                    'habit_name': habit.name,
+                    'progress_percentage': progress_percentage,
+                })
+            
+            response_data.append({
+                'member_id': member.user_id,
+                'username': member.username,
+                'profile_picture': member.profile.profile_picture.url if member.profile.profile_picture else None,
+                'habits': habit_data,
+            })
+        
+        return Response(response_data)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated]) 
+    def my_communities(self, request, pk=None): 
+        user = request.user 
+        communities = Community.objects.filter(user=user) 
+        serializer = CommunitySerializer(communities, many=True) 
+        return Response(serializer.data) 
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated]) 
+    def joined_communities(self, request, pk=None): 
+        user = request.user 
+        communities = Community.objects.filter(members=user) 
+        serializer = CommunitySerializer(communities, many=True) 
+        return Response(serializer.data)
+    
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def recommended_communities(self, request):
+        user_interests = request.user.interests.values_list('interest__id', flat=True)
+        communities = Community.objects.filter(categories__id__in=user_interests).distinct()
+        serializer = CommunitySerializer(communities, many=True)
+        return Response(serializer.data)
 
 
-from django.shortcuts import render
-def create_community_view(request):
-    return render(request, 'create_community.html')
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_community_habit_progress(request, community_id):
+    membership_request = MembershipRequest.objects.filter(community_id=community_id, requester=request.user).first()
+    if not membership_request:
+        return Response({"detail": "Membership request not found."}, status=404)
+
+    selected_habit = membership_request.selected_habit
+    if not selected_habit:
+        return Response({"detail": "Selected habit not found."}, status=404)
+
+    # ارسال درخواست به اندپوینت update_progress اپ HabitTracker
+    update_progress_url = 'http://localhost:8000/update-progress/'
+    data = {
+        'progress_id': request.data.get('progress_id'),
+        'completed': request.data.get('completed')
+    }
+    response = requests.post(update_progress_url, json=data)
+
+    if response.status_code == 200:
+        return Response(response.json(), status=200)
+    else:
+        return Response(response.json(), status=response.status_code)
+
+
+def community_list_view(request):
+    communities = Community.objects.all()
+    return render(request, 'community_list.html', {'communities': communities})
+
 
 class UserHabitViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -339,113 +354,69 @@ class MembershipRequestViewSet(viewsets.ModelViewSet):
 
 
 
-@api_view(['GET', 'POST'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def send_membership_request(request):
-    if request.method == 'POST':
-        serializer = MembershipRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            membership_request = serializer.save()
-            response_serializer = MembershipRequestSerializer(membership_request)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    html_form = '''
-        <html>
-        <head>
-            <title>Send Membership Request</title>
-        </head>
-        <body>
-            <h1>Send Membership Request</h1>
-            <form method="post">
-                <label for="community_id">Community ID:</label><br>
-                <input type="number" id="community_id" name="community_id" required><br>
-                <label for="requester_id">Requester ID:</label><br>
-                <input type="number" id="requester_id" name="requester_id" required><br><br>
-                <button type="submit">Send Request</button>
-            </form>
-        </body>
-        </html>
-    '''
-    return HttpResponse(html_form)
+    community_id = request.data.get('community_id')
+    selected_habit_id = request.data.get('selected_habit_id')
+    requester = request.user
+
+    # بررسی وجود درخواست عضویت مشابه
+    if MembershipRequest.objects.filter(community_id=community_id, requester=requester).exists():
+        return Response({"detail": "Membership request already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # اگر درخواست مشابه وجود ندارد، ایجاد درخواست جدید
+    serializer = MembershipRequestSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        membership_request = serializer.save()
+        response_serializer = MembershipRequestSerializer(membership_request)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_membership_requests(request, community_id):
-    if request.method == 'POST':
-        try:
-            community = Community.objects.get(id=community_id)
-            membership_requests = MembershipRequest.objects.filter(community=community)
-            serializer = MembershipRequestSerializer(membership_requests, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Community.DoesNotExist:
-            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    # نمایش فرم HTML برای متد GET
-    html_form = '''
-        <html>
-        <head>
-            <title>View Membership Requests</title>
-        </head>
-        <body>
-            <h1>View Membership Requests</h1>
-            <form method="post">
-                <label for="community_id">Community ID:</label><br>
-                <input type="number" id="community_id" name="community_id" value="{}" readonly><br><br>
-                <button type="submit">View Requests</button>
-            </form>
-        </body>
-        </html>
-    '''.format(community_id)
-    return HttpResponse(html_form)
+    try:
+        community = Community.objects.get(id=community_id)
+        # تشخیص سازنده‌ی کامیونیتی بدون نیاز به احراز هویت
+        if community.user and community.user != request.user:
+            return Response({"detail": "Only the community admin can view membership requests."}, status=status.HTTP_403_FORBIDDEN)
 
-@api_view(['GET', 'POST'])
+        membership_requests = MembershipRequest.objects.filter(community=community)
+        serializer = MembershipRequestSerializer(membership_requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Community.DoesNotExist:
+        return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def manage_membership_request(request, community_id):
-    if request.method == 'POST':
-        serializer = ApproveMembershipRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            request_id = serializer.validated_data['request_id']
-            action = serializer.validated_data['action']
+    serializer = ApproveMembershipRequestSerializer(data=request.data)
+    if serializer.is_valid():
+        request_id = serializer.validated_data['request_id']
+        action = serializer.validated_data['action']
 
-            try:
-                community = Community.objects.get(id=community_id)
-                membership_request = MembershipRequest.objects.get(id=request_id, community=community)
-                if action == 'approve':
-                    membership_request.status = 'approved'
-                    community.members.add(membership_request.requester)
-                    membership_request.save()
-                    return Response({"detail": "Membership request approved and user added to community."}, status=status.HTTP_200_OK)
-                elif action == 'reject':
-                    membership_request.status = 'rejected'
-                    membership_request.save()
-                    return Response({"detail": "Membership request rejected."}, status=status.HTTP_200_OK)
-            except Community.DoesNotExist:
-                return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
-            except MembershipRequest.DoesNotExist:
-                return Response({"detail": "Membership request not found."}, status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    # نمایش فرم HTML برای متد GET
-    html_form = '''
-        <html>
-        <head>
-            <title>Manage Membership Request</title>
-        </head>
-        <body>
-            <h1>Manage Membership Request</h1>
-            <form method="post">
-                <label for="request_id">Request ID:</label><br>
-                <input type="number" id="request_id" name="request_id" required><br>
-                <label for="action">Action:</label><br>
-                <select id="action" name="action" required>
-                    <option value="approve">Approve</option>
-                    <option value="reject">Reject</option>
-                </select><br><br>
-                <button type="submit">Submit</button>
-            </form>
-        </body>
-        </html>
-    '''
-    return HttpResponse(html_form)
+        try:
+            community = Community.objects.get(id=community_id)
+            # تشخیص سازنده‌ی کامیونیتی بدون نیاز به احراز هویت
+            if community.user and community.user != request.user:
+                return Response({"detail": "Only the community admin can manage membership requests."}, status=status.HTTP_403_FORBIDDEN)
+
+            membership_request = MembershipRequest.objects.get(id=request_id, community=community)
+            if action == 'approve':
+                membership_request.status = 'approved'
+                community.members.add(membership_request.requester)
+                membership_request.save()
+                return Response({"detail": "Membership request approved and user added to community."}, status=status.HTTP_200_OK)
+            elif action == 'reject':
+                membership_request.status = 'rejected'
+                membership_request.save()
+                return Response({"detail": "Membership request rejected."}, status=status.HTTP_200_OK)
+        except Community.DoesNotExist:
+            return Response({"detail": "Community not found."}, status=status.HTTP_404_NOT_FOUND)
+        except MembershipRequest.DoesNotExist:
+            return Response({"detail": "Membership request not found."}, status=status.HTTP_404_NOT_FOUND)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

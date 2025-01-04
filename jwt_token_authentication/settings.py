@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'todo',
     'profiles',
     'community',
+    'interest',
 
     'crispy_bootstrap5',  # یا هر نسخه دیگری از Bootstrap که استفاده می‌کنید
 
@@ -181,6 +182,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'jwt_token_authentication.urls'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 
 TEMPLATES = [

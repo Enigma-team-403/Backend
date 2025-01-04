@@ -1,7 +1,8 @@
+from django.core.cache import cache
 from rest_framework import serializers
 from .models import Community, Category , MembershipRequest
 from HabitTracker.models import Habit
-from django.contrib.auth.models import User # افزودن مدل User
+from django.contrib.auth.models import User 
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -15,7 +16,36 @@ class CategorySerializer(serializers.ModelSerializer):
 class HabitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Habit
-        fields ='__all__'
+        fields ='__all__'    
+
+class CommunityMemberSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.ImageField(source='profile.profile_picture', read_only=True)
+    selected_habit = serializers.SerializerMethodField()
+    member_progress = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['username', 'profile_picture', 'selected_habit', 'member_progress']
+
+    def get_selected_habit(self, obj):
+        membership_request = MembershipRequest.objects.filter(requester=obj, community__members=obj).first()
+        if membership_request and membership_request.selected_habit:
+            return {
+                'id': membership_request.selected_habit.id,
+                'name': membership_request.selected_habit.name,
+            }
+        return None
+
+    def get_member_progress(self, obj):
+        selected_habit = self.get_selected_habit(obj)
+        progress_data = []
+        if selected_habit: 
+            habit_id = selected_habit['id'] 
+            progress_percentage = cache.get(f'habit_{habit_id}_progress', 0) 
+            return { 'habit_id': habit_id, 
+                    'habit_name': selected_habit['name'], 
+                    'progress_percentage': progress_percentage, } 
+        return None
 
 
 class CommunitySerializer(serializers.ModelSerializer):
@@ -29,13 +59,13 @@ class CommunitySerializer(serializers.ModelSerializer):
         
 
     def validate_categories(self, value): 
-        if len(value) != 1: 
-            raise serializers.ValidationError("You must select exactly one category.") 
+        if len(value) > 2: 
+            raise serializers.ValidationError("You can select a maximum of 2 categories.") 
         return value
 
     def validate_habits(self, value): 
-        if len(value) > 2: 
-            raise serializers.ValidationError("You can select a maximum of 2 habits.") 
+        if len(value) != 1: 
+            raise serializers.ValidationError("You must select exactly one habit.") 
         return value
 
     def create(self, validated_data):
@@ -60,39 +90,41 @@ class CommunitySerializer(serializers.ModelSerializer):
         instance.categories.set(categories_data)
         instance.habits.set(habits_data)
         return instance
-    
-    
+
+
+
 
 
 class MembershipRequestSerializer(serializers.ModelSerializer):
     community_id = serializers.IntegerField(write_only=True, required=True)
-    requester_id = serializers.IntegerField(write_only=True, required=True)
-    community = serializers.PrimaryKeyRelatedField(read_only=True) 
+    selected_habit_id = serializers.IntegerField(write_only=True, required=True)
+    community = serializers.PrimaryKeyRelatedField(read_only=True)
     requester = serializers.PrimaryKeyRelatedField(read_only=True)
+    selected_habit = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = MembershipRequest
-        fields = ['id', 'community', 'community_id', 'requester', 'requester_id', 'status', 'created_at']        
-        read_only_fields = ['id', 'status', 'created_at']   
-
-    
+        fields = ['id', 'community', 'community_id', 'requester', 'status', 'created_at', 'selected_habit', 'selected_habit_id']
+        read_only_fields = ['id', 'status', 'created_at']
 
     def create(self, validated_data):
         community_id = validated_data.pop('community_id')
-        requester_id = validated_data.pop('requester_id')
+        selected_habit_id = validated_data.pop('selected_habit_id')
+        requester = self.context['request'].user
+        
         try:
             community = Community.objects.get(id=community_id)
-            requester = User.objects.get(id=requester_id)
+            selected_habit = Habit.objects.get(id=selected_habit_id)
         except Community.DoesNotExist:
             raise serializers.ValidationError({"community_id": "Community not found."})
-        except User.DoesNotExist:
-            raise serializers.ValidationError({"requester_id": "Requester not found."})
-        
+        except Habit.DoesNotExist:
+            raise serializers.ValidationError({"selected_habit_id": "Selected habit not found."})
+
         if MembershipRequest.objects.filter(community=community, requester=requester).exists():
             raise serializers.ValidationError({"detail": "Membership request already exists."})
 
-        membership_request = MembershipRequest.objects.create(community=community, requester=requester)
+        membership_request = MembershipRequest.objects.create(community=community, requester=requester, selected_habit=selected_habit)
         return membership_request
-
 
 class ApproveMembershipRequestSerializer(serializers.Serializer): 
     request_id = serializers.IntegerField(required=True) 
