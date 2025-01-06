@@ -16,7 +16,7 @@ urlpatterns = [
     
     # cd planner and .venv\scripts\activate and runserver To run the following lines
     
-    
+    path('admin/', admin.site.urls),
     path('api/todo/', include('todo.urls')),
     path('api/profiles/', include('profiles.urls')), 
     path('api/community/', include('community.urls')),
