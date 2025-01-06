@@ -9,6 +9,6 @@ router.register(r'profiles', ProfileViewSet, basename='profile')
 urlpatterns = [
     path('', include(router.urls)),
     path('profiles/my_profile/', ProfileViewSet.as_view({'get': 'my_profile'}), name='my-profile'),
-    path('profiles/<int:pk>/edit_profile/', ProfileViewSet.as_view({'put': 'edit_profile'}), name='edit-profile'),
+    path('profiles/edit_profile/', ProfileViewSet.as_view({'put': 'edit_profile'}), name='edit-profile'),
 ]
 

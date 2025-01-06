@@ -33,13 +33,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
     
-    @action(detail=True, methods=['put'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
     def edit_profile(self, request, pk=None):
-        profile = self.get_object()
+        profile = self.get_queryset().first()        
+        if not profile:
+            return Response({"detail": "پروفایلی برای ویرایش یافت نشد."}, status=404)
         serializer = self.get_serializer(profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
+        if serializer.is_valid(): 
+            serializer.save() 
+            return Response(serializer.data) 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+        
