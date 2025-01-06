@@ -36,17 +36,18 @@ class UserInterestViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
-    def save_user_interests(self, request):
+    def create(self, request, *args, **kwargs):  
         selected_interests = request.data.get('interests')
-        if not isinstance(selected_interests, list) or not 2 <= len(selected_interests) <= 3:
-            return Response({'error': 'Please select 2 or 3 interests.'}, status=400)
-
+        if not isinstance(selected_interests, list) or len(selected_interests) == 0:
+            return Response({'error': 'Please provide a list of interest IDs.'}, status=400)
         UserInterest.objects.filter(user=request.user).delete()  # Clear previous interests
+        
         for interest_id in selected_interests:
-            interest = Interest.objects.get(id=interest_id)
-            UserInterest.objects.create(user=request.user, interest=interest)
-
+            try: 
+                interest = Interest.objects.get(id=interest_id) 
+                UserInterest.objects.create(user=request.user, interest=interest) 
+            except Interest.DoesNotExist: 
+                return Response({'error': f'Interest with id {interest_id} does not exist.'}, status=400)
         return Response({'message': 'Interests saved successfully.'}, status=201)
 
 
