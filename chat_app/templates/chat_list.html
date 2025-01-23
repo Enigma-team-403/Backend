@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat List</title>
+</head>
+<body>
+    <h1>Your Chats</h1>
+    <div id="chat-list">
+        <!-- Chats will be dynamically rendered here -->
+    </div>
+
+    <h2>Start a New Chat</h2>
+    <form method="POST" action="{% url 'chat-list-create' %}">
+        {% csrf_token %}
+        <label for="participant">Participant Username:</label>
+        <input type="text" id="participant" name="participant" required>
+        <button type="submit">Create Chat</button>
+    </form>
+</body>
+</html>

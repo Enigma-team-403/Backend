@@ -1,0 +1,53 @@
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Edit Task: {{ task.title }}</h2>
+
+        <!-- Display success or error messages -->
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Task Edit Form -->
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_title">Task Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_description">Description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_priority">Priority</label>
+                {{ form.priority }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_start_time">Start Time</label>
+                {{ form.start_time }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_end_time">End Time</label>
+                {{ form.end_time }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_completed">Completed</label>
+                {{ form.completed }}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Task</button>
+            <a href="{% url 'index' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+{% endblock %}

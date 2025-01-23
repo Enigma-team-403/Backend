@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Community List</title>
+</head>
+<body>
+    <h1>All Communities</h1>
+    <ul>
+        {% for community in communities %}
+            <li>{{ community.title }} - {{ community.description }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Create a New Community</h2>
+    <form method="post" action="{% url 'community-create' %}">
+        {% csrf_token %}
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" required></textarea><br>
+        <!-- سایر فیلدهای مورد نیاز -->
+        <button type="submit">Create Community</button>
+    </form>
+</body>
+</html>
