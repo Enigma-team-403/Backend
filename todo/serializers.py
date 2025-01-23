@@ -43,6 +43,9 @@ class TaskSerializer(serializers.ModelSerializer):
     tags = TagSerializer(source='task_tags.tag', many=True, read_only=True)
     list = serializers.PrimaryKeyRelatedField(queryset=List.objects.all())
     user = serializers.ReadOnlyField(source='user.username')
+    create_time = serializers.ReadOnlyField()
+    start_task = serializers.ReadOnlyField()
+    end_task = serializers.ReadOnlyField()
 
     class Meta:
         model = Task

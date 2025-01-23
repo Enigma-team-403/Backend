@@ -284,7 +284,6 @@ def update_community_habit_progress(request, community_id):
     if not selected_habit:
         return Response({"detail": "Selected habit not found."}, status=404)
 
-    # ارسال درخواست به اندپوینت update_progress اپ HabitTracker
     update_progress_url = 'http://localhost:8000/update-progress/'
     data = {
         'progress_id': request.data.get('progress_id'),

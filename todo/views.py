@@ -26,9 +26,9 @@ class TaskViewSet(viewsets.ModelViewSet):
     def filter_by_tag(self, request):
         tag_name = request.query_params.get('tag', None)
         if tag_name:
-            tasks = self.queryset.filter(tag__name=tag_name)
+            tasks = self.get_queryset().filter(tag__name=tag_name)
         else:
-            tasks = self.queryset.none()
+            tasks = self.get_queryset().none()
 
         serializer = self.get_serializer(tasks, many=True)
         return Response(serializer.data)
@@ -37,28 +37,30 @@ class TaskViewSet(viewsets.ModelViewSet):
     def filter_by_month(self, request):
         date_str = request.query_params.get('month', None)
         if date_str:
-            date = parse_date(date_str)
-            if date:
-                tasks = self.queryset.filter(create_time__year=date.year, create_time__month=date.month)
-            else:
-                tasks = self.queryset.none()
+            try:
+                date = parse_date(date_str)
+                if date:
+                    tasks = self.get_queryset().filter(create_time__year=date.year, create_time__month=date.month)
+                else:
+                    tasks = self.get_queryset().none()
+            except ValueError:
+                tasks = self.get_queryset().none()
         else:
-            tasks = self.queryset.none()
+            tasks = self.get_queryset().none()
 
         serializer = self.get_serializer(tasks, many=True)
         return Response(serializer.data)
-
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])    
     def search(self, request):
         query = request.query_params.get('task', None)
         if query:
-            tasks = self.queryset.filter(title__icontains=query)
-            results = [{'task': task.title, 'list': task.list.title} for task in tasks]
+            tasks = self.get_queryset().filter(title__icontains=query)
+            serializer = self.get_serializer(tasks, many=True)
         else:
-            results = []
+            tasks = self.get_queryset().none()
 
-        return Response(results)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
     def edit(self, request, pk=None):
@@ -86,16 +88,16 @@ class SubTaskViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(user=self.request.user) 
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def search(self, request):
         query = request.query_params.get('subtask', None)
         if query:
-            subtasks = self.queryset.filter(title__icontains=query)
-            results = [{'subtask': subtask.title, 'list': subtask.list.title} for subtask in subtasks]
+            subtasks = self.get_queryset().filter(title__icontains=query)
+            serializer = self.get_serializer(subtasks, many=True)
         else:
-            results = []
+            subtasks = self.get_queryset().none()
 
-        return Response(results)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
     def edit(self, request, pk=None):
@@ -174,35 +176,38 @@ class ListViewSet(viewsets.ModelViewSet):
         query = request.query_params.get('list', None)
         if query:
             lists = self.get_queryset().filter(title__icontains=query)
+            serializer = self.get_serializer(lists, many=True)
         else:
             lists = self.get_queryset().none()
 
-        serializer = self.get_serializer(lists, many=True)
         return Response(serializer.data)
     
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
-    def filter_by_tag(self, request):
-        tag_name = request.query_params.get('tag', None)
-        if tag_name:
-            lists = self.get_queryset().filter(tasks__tag__name=tag_name).distinct()
-        else:
-            lists = self.get_queryset().none()
+    # @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    # def filter_by_tag(self, request):
+    #     tag_name = request.query_params.get('tag', None)
+    #     if tag_name:
+    #         lists = self.get_queryset().filter(tasks__tag__name=tag_name).distinct()
+    #     else:
+    #         lists = self.get_queryset().none()
 
-        serializer = self.get_serializer(lists, many=True)
-        return Response(serializer.data)
+    #     serializer = self.get_serializer(lists, many=True)
+    #     return Response(serializer.data)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_by_month(self, request):
         date_str = request.query_params.get('month', None)
         if date_str:
-            date = parse_date(date_str)
-            if date:
-                lists = self.get_queryset().filter(tasks__create_time__year=date.year, tasks__create_time__month=date.month).distinct()
-            else:
-                lists = self.get_queryset().none()
+            try:
+                date = parse_date(date_str)
+                if date:
+                    tasks = self.get_queryset().filter(create_time__year=date.year, create_time__month=date.month)
+                else:
+                    tasks = self.get_queryset().none()
+            except ValueError:
+                tasks = self.get_queryset().none()
         else:
-            lists = self.get_queryset().none()
+            tasks = self.get_queryset().none()
 
-        serializer = self.get_serializer(lists, many=True)
+        serializer = self.get_serializer(tasks, many=True)
         return Response(serializer.data)
