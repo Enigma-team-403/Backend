@@ -1,31 +1,34 @@
+from django.conf import settings
 from django.db import models
-from django.utils.timezone import now
-from django.utils import timezone
 
 class Habit(models.Model):
-
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    duration = models.IntegerField(null=True, blank=True, default=7)
-    start_date = models.DateField(default=timezone.now)
-    goal = models.IntegerField(default=0)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='habits')  # استفاده از settings.AUTH_USER_MODEL
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    duration = models.PositiveIntegerField(default=1)  # تعریف مقدار پیش‌فرض
+    goal = models.FloatField()
     progress = models.FloatField(default=0.0)
-    topic = models.CharField(max_length=100, blank=True, null=True)
-    SECTION_CHOICES = [
+    topic = models.CharField(max_length=255, blank=True, null=True)
+    section = models.CharField(max_length=20, choices=[
         ('Morning', 'Morning'),
         ('Afternoon', 'Afternoon'),
         ('Night', 'Night'),
         ('Others', 'Others'),
-    ]
-    section = models.CharField(max_length=20, choices=SECTION_CHOICES, default='Others')
+    ], default='Others')
 
     def __str__(self):
         return self.name
 
+    @property
+    def daily_target(self):
+        if self.duration > 0:
+            return self.goal / self.duration
+        return 0
+
 class DailyProgress(models.Model):
-    habit = models.ForeignKey(Habit, on_delete=models.CASCADE, related_name='daily_progress')
+    habit = models.ForeignKey(Habit, related_name='daily_progress', on_delete=models.CASCADE)
     date = models.DateField()
-    completed = models.BooleanField(default=False)
+    completed_amount = models.FloatField(default=0.0)
 
     def __str__(self):
         return f'{self.habit.name} - {self.date}'

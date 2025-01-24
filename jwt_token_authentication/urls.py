@@ -10,11 +10,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/members/', include('members.urls')),
     path('api/', include('planner.urls')),
-    # path('api/', include('HabitTracker.urls')),
     path('', include('planner.urls')),
+    # path('api/', include('HabitTracker.urls')),
     # path('', include('HabitTracker.urls')),
-    
-    # cd planner and .venv\scripts\activate and runserver To run the following lines
     
     path('api/todo/', include('todo.urls')),
     path('api/profiles/', include('profiles.urls')), 

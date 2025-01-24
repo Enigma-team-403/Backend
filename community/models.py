@@ -20,8 +20,8 @@ class Community(models.Model):
     habits = models.ManyToManyField(Habit, related_name='communities')
     categories = models.ManyToManyField(Category, related_name='communities')
     profile_picture = models.ImageField(upload_to='profile_community/', null=True, blank=True)
-    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='communities')
-
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='communities', blank=True)
+    profile_picture = models.ImageField(upload_to='community_profiles/', null=True, blank=True)
     def __str__(self):
         return self.title
     

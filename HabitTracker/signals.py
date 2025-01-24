@@ -1,16 +1,34 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import DailyProgress, Habit
+from community.models import MembershipRequest
 from django.core.cache import cache
+import requests
 
 @receiver(post_save, sender=DailyProgress)
 def update_community_progress(sender, instance, **kwargs):
     habit = instance.habit
-    completed_days = habit.daily_progress.filter(completed=True).count()
-    progress_percentage = (completed_days / habit.duration) * 100 if habit.duration > 0 else 0
+    total_completed = sum(dp.completed_amount for dp in habit.daily_progress.all())
+    progress_percentage = (total_completed / habit.goal) * 100 if habit.goal > 0 else 0
 
     habit.progress = progress_percentage
     habit.save()
-
-    # به‌روزرسانی در کش
     cache.set(f'habit_{habit.id}_progress', progress_percentage)
+
+    # پیدا کردن درخواست عضویت مربوط به این عادت و کاربر
+    membership_request = MembershipRequest.objects.filter(selected_habit=habit, requester=habit.user).first()
+    community_id = membership_request.community.id if membership_request else None
+    
+    # ارسال درخواست به‌روزرسانی به کامیونیتی
+    if community_id:
+        update_progress_url = f'http://127.0.0.1:8000/api/community/communities/{community_id}/update_habit_progress/'
+        data = {
+            'progress_id': instance.id,
+            'completed_amount': instance.completed_amount
+        }
+        try:
+            response = requests.post(update_progress_url, json=data)
+            response.raise_for_status()
+            print("Community progress updated successfully.")
+        except requests.exceptions.RequestException as e:
+            print(f"Error updating community progress: {e}")

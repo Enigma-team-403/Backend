@@ -4,7 +4,7 @@ from .models import Community, Category , MembershipRequest
 from HabitTracker.models import Habit
 from django.contrib.auth.models import User 
 from django.contrib.auth import get_user_model
-
+from django.contrib.auth.models import User  # اطمینان از وارد کردن User model
 User = get_user_model()
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -53,10 +53,10 @@ class CommunitySerializer(serializers.ModelSerializer):
     habits = serializers.PrimaryKeyRelatedField(queryset=Habit.objects.all(), many=True)
     categories = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), many=True)
     members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True, required=False)
+    profile_picture = serializers.ImageField(required=False)  
     class Meta:
         model = Community
-        fields =  ['id','user', 'title', 'description','categories','habits','members']  
-        
+        fields =  ['id','user', 'title', 'description','categories','habits','members','profile_picture']  
 
     def validate_categories(self, value): 
         if len(value) > 2: 

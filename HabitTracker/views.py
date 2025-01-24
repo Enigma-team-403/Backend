@@ -8,6 +8,94 @@ from .models import Habit, DailyProgress
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
+from .serializers import HabitSerializer,DailyProgressSerializer
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status,generics
+from community.models import MembershipRequest
+import requests
+from .models import DailyProgress
+from .serializers import DailyProgressSerializer
+from rest_framework import generics
+from .models import Habit
+from .serializers import HabitSerializer
+
+
+class HabitListView(generics.ListAPIView):
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+
+class HabitCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = HabitCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            habit = serializer.save(user=request.user)  # اضافه کردن کاربر به عادت
+            today = timezone.now().date()
+            for i in range(habit.duration):
+                progress_date = today + timedelta(days=i)
+                DailyProgress.objects.create(habit=habit, date=progress_date)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class HabitListView(generics.ListAPIView):
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+
+
+class HabitDeleteView(generics.DestroyAPIView):
+    queryset = Habit.objects.all()
+    serializer_class = HabitSerializer
+
+
+class HabitUpdateView(APIView):
+    def put(self, request, pk, format=None):
+        habit = get_object_or_404(Habit, pk=pk)
+        serializer = HabitSerializer(habit, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from django.utils.timezone import now
+
+class UpdateProgressView(APIView):
+    def post(self, request, format=None):
+        habit_id = request.data.get('habit_id')
+        completed = request.data.get('completed', False)  # مقدار پیش‌فرض False
+
+        habit = get_object_or_404(Habit, id=habit_id)
+        current_date = now().date()
+
+        # بررسی وجود DailyProgress برای تاریخ جاری
+        if DailyProgress.objects.filter(habit=habit, date=current_date).exists():
+            return Response({'message': 'You have already done this habit today.', 'progress': habit.progress}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ایجاد DailyProgress برای تاریخ جاری
+        daily_progress = DailyProgress.objects.create(habit=habit, date=current_date)
+
+        if completed:
+            daily_progress.completed_amount = habit.daily_target  # اگر انجام شد، مقدار daily_target اضافه شود
+        else:
+            daily_progress.completed_amount = 0  # اگر انجام نشد، مقدار صفر باشد
+        
+        daily_progress.save()
+
+        # به‌روزرسانی پیشرفت عادت
+        total_completed = sum(dp.completed_amount for dp in habit.daily_progress.all())
+        habit.progress = (total_completed / habit.goal) * 100 if habit.goal > 0 else 0
+        habit.save()
+
+        message = "Today's habit is done." if completed else "Today's habit is not done."
+
+
+        return Response({'message': message, 'progress': habit.progress}, status=status.HTTP_200_OK)
+
+
+
 
 
 
@@ -50,30 +138,27 @@ def habits_list_view(request):
     return render(request, 'HabitTracker/habits_list.html', {'habits_with_progress': habits_with_progress})
 
 
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
 def update_progress(request):
     if request.method == 'POST':
         try:
-            # Parse incoming JSON data
             data = json.loads(request.body)
             progress_id = data.get('progress_id')
             completed = data.get('completed')
 
-            # Fetch the daily progress entry
             progress = DailyProgress.objects.get(id=progress_id)
             habit = progress.habit
 
-            # Update the completed status
             progress.completed = completed
             progress.save()
 
-            # Recalculate the overall progress of the habit
             completed_days = DailyProgress.objects.filter(habit=habit, completed=True).count()
             habit.progress = (completed_days / habit.duration) * 100 if habit.duration > 0 else 0
             habit.save()
 
-            # Return the updated progress percentage
             return JsonResponse({'success': True, 'progress': habit.progress})
-
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
@@ -81,22 +166,20 @@ def update_progress(request):
 
 def habit_create_view(request):
     if request.method == 'POST':
-        name = request.POST['name']
+        print("POST data:", request.POST)  # اضافه کردن لاگ برای بررسی داده‌های POST
+        name = request.POST.get('name')
+        if not name:
+            print("Name field is missing in the POST data")
+            return JsonResponse({'error': 'Name field is required'}, status=400)
         description = request.POST.get('description', '')
-        duration = int(request.POST['duration'])
-
-        # Create habit
+        duration = int(request.POST.get('duration', 7))  # اضافه کردن مقدار پیش فرض برای duration
+        print(f"Creating habit with name: {name}, description: {description}, duration: {duration}")
         habit = Habit.objects.create(name=name, description=description, duration=duration)
-
-        # Generate DailyProgress records starting from today (habit creation date)
         today = timezone.now().date()
-
         for i in range(duration):
-            progress_date = today + timedelta(days=i)  # Starts from today and adds 0, 1, 2, etc.
+            progress_date = today + timedelta(days=i) 
             DailyProgress.objects.create(habit=habit, date=progress_date)
-
         return redirect('habits-list')
-    
     return render(request, 'HabitTracker/habit_create.html')
 
 

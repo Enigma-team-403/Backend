@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
-from .views import CommunityViewSet,SearchCommunityView,UserMembershipRequestsView,MembershipRequestViewSet,send_membership_request ,view_membership_requests,manage_membership_request,community_list_view ,update_community_habit_progress
+from .views import CommunityViewSet,SearchCommunityView,UserMembershipRequestsView,MembershipRequestViewSet,send_membership_request ,view_membership_requests,manage_membership_request,community_list_view,UpdateCommunityHabitProgressView ,update_community_habit_progress
 from . import views
 
 
@@ -29,13 +29,11 @@ urlpatterns = [
     path('communities/<int:pk>/membership_requests/', CommunityViewSet.as_view({'get': 'membership_requests'}), name='community-membership-requests'),
     path('communities/<int:pk>/edit/', CommunityViewSet.as_view({'put': 'update'}), name='community-update'),  # ویرایش یک کامیونیتی
     path('communities/<int:pk>/delete/', CommunityViewSet.as_view({'delete': 'destroy'}), name='community-delete'),  # حذف یک کامیونیتی
-    path('communities/<int:pk>/', CommunityViewSet.as_view({'get': 'retrieve'}), name='community-retrieve'),  # دریافت جزئیات یک کامیونیتی
-    
-    path('communities/<int:pk>/members/', CommunityViewSet.as_view({'get': 'members'}), name='community-members'),
-    path('communities/<int:pk>/member_progress/', CommunityViewSet.as_view({'get': 'member_progress'}), name='community-member-progress'),
+    path('communities/<int:pk>/', CommunityViewSet.as_view({'get': 'retrieve'}), name='community-retrieve'),  # دریافت جزئیات یک کامیونیتی),
+
+    path('communities/<int:pk>/members/', CommunityViewSet.as_view({'get': 'members'}), name='community-members'),  # مسیر مورد نظر    
     path('communities/my_communities/', CommunityViewSet.as_view({'get': 'my_communities'}), name='my-communities'), 
     path('communities/joined_communities/', CommunityViewSet.as_view({'get': 'joined_communities'}), name='joined-communities'),
-    path('communities/<int:community_id>/update_habit_progress/', update_community_habit_progress, name='update-community-habit-progress'),
+    # path('communities/<int:community_id>/update_habit_progress/', update_community_habit_progress, name='update-community-habit-progress'),
     path('recommended_communities/', CommunityViewSet.as_view({'get': 'recommended_communities'}), name='recommended-communities'),
-    ]
-
+    path('communities/<int:community_id>/update_habit_progress/', UpdateCommunityHabitProgressView.as_view(), name='update-community-habit-progress'),]
