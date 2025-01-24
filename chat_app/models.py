@@ -9,7 +9,8 @@ class Chat(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Chat between {', '.join([user.get_username() for user in self.participants.all()])}"
+        return f"Chat between {', '.join([user.username for user in self.participants.all()])}"
+
 
 class Message(models.Model):
     chat = models.ForeignKey(Chat, related_name='messages', on_delete=models.CASCADE)

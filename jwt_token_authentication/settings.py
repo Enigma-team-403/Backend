@@ -79,12 +79,24 @@ INSTALLED_APPS = [
     'profiles',
     'community',
     'interest',
+    'channels',
     'chat_app',
+
 
     'crispy_bootstrap5',  # یا هر نسخه دیگری از Bootstrap که استفاده می‌کنید
 
     'rest_framework.authtoken'
     ]
+ASGI_APPLICATION = 'jwt_token_authentication.asgi.application'  # Point to your ASGI application
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Use in-memory layer for development
+    },
+}
+
+
+
+
 
 CORS_ALLOW_ALL_ORIGINS = True
 
