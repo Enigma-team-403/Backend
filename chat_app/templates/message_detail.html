@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Details</title>
+</head>
+<body>
+    <h1>Message Details</h1>
+    <div id="message-detail">
+        <!-- Detailed information about the message will be displayed here -->
+    </div>
+
+    <h2>Delete Message</h2>
+    <form method="POST" action="{% url 'message-detail' chat_id=chat_id message_id=message_id %}">
+        {% csrf_token %}
+        <button type="submit">Delete Message</button>
+    </form>
+</body>
+</html>

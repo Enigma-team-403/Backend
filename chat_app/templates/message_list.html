@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message List</title>
+</head>
+<body>
+    <h1>Messages in Chat</h1>
+    <div id="message-list">
+        <!-- All messages for the chat will be dynamically rendered here -->
+    </div>
+
+    <h2>Send a New Message</h2>
+    <form method="POST" action="{% url 'message-list-create' chat_id=chat_id %}">
+        {% csrf_token %}
+        <label for="content">Message:</label>
+        <textarea id="content" name="content" required></textarea>
+        <button type="submit">Send</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<form method="post" action="{% url 'select-interests' %}">
+    {% csrf_token %}
+    {% for interest in interests %}
+        <label>
+            <input type="checkbox" name="interests" value="{{ interest.id }}">
+            {{ interest.name }}
+        </label><br>
+    {% endfor %}
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <button type="submit">Save Interests</button>
+</form>
