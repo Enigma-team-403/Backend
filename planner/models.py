@@ -39,13 +39,15 @@ class Task(models.Model):
         return self.title
 
 
+from django.db import models
+
 class ChecklistItem(models.Model):
+    task = models.ForeignKey(Task, related_name='checklist_items', on_delete=models.CASCADE)  # Add this line
     title = models.CharField(max_length=200)
     completed = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
-
 
 class Comment(models.Model):
     task = models.ForeignKey(Task, related_name='comments', on_delete=models.CASCADE)

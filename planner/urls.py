@@ -2,7 +2,7 @@ from django.urls import path , include
 from rest_framework.routers import DefaultRouter
 from . import views
 from .views import TaskViewSet, filter_tasks, update_task_status, get_task_status, planner_view
-
+from .views import get_checklist_items
 
 
 router = DefaultRouter()
@@ -25,5 +25,7 @@ urlpatterns = [
     path('task/change-priority/<int:task_id>/<int:priority>/', views.change_priority, name='change_priority'),
     path('checklist/toggle_completed/<int:item_id>/', views.toggle_checklist_item_completed, name='toggle_checklist_item_completed'),
     path('checklist/delete/<int:item_id>/', views.delete_checklist_item, name='delete_checklist_item'),
-    ]
+    path('task/<int:task_id>/checklist/', get_checklist_items, name='get_checklist_items'),
+]
+    
 
