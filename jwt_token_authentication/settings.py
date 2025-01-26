@@ -34,7 +34,9 @@ ALLOWED_HOSTS = ['shadizargar.pythonanywhere.com','127.0.0.1','root']
 ## custom user model
 AUTH_USER_MODEL = 'members.User'
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    
 # # Application definition
 # CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOW_METHODS = ('*', )
