@@ -21,7 +21,7 @@ def update_community_progress(sender, instance, **kwargs):
     
     # ارسال درخواست به‌روزرسانی به کامیونیتی
     if community_id:
-        update_progress_url = f'http://127.0.0.1:8000/api/community/communities/{community_id}/update_habit_progress/'
+        update_progress_url = f'https://shadizargar.pythonanywhere.com/api/community/communities/{community_id}/update_habit_progress/'
         data = {
             'habit_id': habit.id,
             'completed': instance.completed_amount > 0

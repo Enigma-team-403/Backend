@@ -122,7 +122,7 @@ class UpdateProgressView(APIView):
         # ارسال درخواست به‌روزرسانی به اپلیکیشن کامیونیتی
         communities = habit.communities.all()
         for community in communities:
-            update_progress_url = f'http://127.0.0.1:8000/api/community/communities/{community.id}/update_habit_progress/'
+            update_progress_url = f'https://shadizargar.pythonanywhere.com/api/community/communities/{community.id}/update_habit_progress/'
             data = {
                 'habit_id': habit.id,
                 'completed': completed

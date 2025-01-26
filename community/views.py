@@ -224,6 +224,15 @@ class CommunityViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Selected habit not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+import requests
+
+class CommunityViewSet(viewsets.ModelViewSet):
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
+
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):
         community = self.get_object()
@@ -237,7 +246,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
                 selected_habit = membership_request.selected_habit
 
                 # ارسال درخواست به اندپوینت /habits/ برای دریافت پروگرس هبیت
-                habit_details_url = f'http://127.0.0.1:8000/api/habits/habits/{selected_habit.id}/'
+                habit_details_url = f'https://shadizargar.pythonanywhere.com/api/habits/habits{selected_habit.id}/'
                 try:
                     response = requests.get(habit_details_url)
                     response.raise_for_status()
