@@ -54,14 +54,13 @@ class TaskViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])    
     def search(self, request):
         query = request.query_params.get('task', None)
+        tasks = self.get_queryset().none()
         if query:
             tasks = self.get_queryset().filter(title__icontains=query)
-            serializer = self.get_serializer(tasks, many=True)
-        else:
-            tasks = self.get_queryset().none()
-
+        
+        serializer = self.get_serializer(tasks, many=True)
         return Response(serializer.data)
-
+    
     @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
     def edit(self, request, pk=None):
         task = self.get_object()
@@ -91,14 +90,13 @@ class SubTaskViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def search(self, request):
         query = request.query_params.get('subtask', None)
+        subtasks = self.get_queryset().none()
         if query:
             subtasks = self.get_queryset().filter(title__icontains=query)
-            serializer = self.get_serializer(subtasks, many=True)
-        else:
-            subtasks = self.get_queryset().none()
-
+        
+        serializer = self.get_serializer(subtasks, many=True)
         return Response(serializer.data)
-
+    
     @action(detail=True, methods=['put'], permission_classes=[permissions.IsAuthenticated])
     def edit(self, request, pk=None):
         subtask = self.get_object()
@@ -174,14 +172,13 @@ class ListViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def search(self, request):
         query = request.query_params.get('list', None)
+        lists = self.get_queryset().none()
         if query:
             lists = self.get_queryset().filter(title__icontains=query)
-            serializer = self.get_serializer(lists, many=True)
-        else:
-            lists = self.get_queryset().none()
-
+        
+        serializer = self.get_serializer(lists, many=True)
         return Response(serializer.data)
-    
+        
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_by_month(self, request):
