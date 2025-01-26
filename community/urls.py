@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.contrib import admin
 from rest_framework.routers import DefaultRouter
-from .views import CommunityViewSet,SearchCommunityView,UserMembershipRequestsView,MembershipRequestViewSet,send_membership_request ,view_membership_requests,manage_membership_request,community_list_view,UpdateCommunityHabitProgressView ,update_community_habit_progress
+from .views import CommunityViewSet,SearchCommunityView,UserMembershipRequestsView,MembershipRequestViewSet,send_membership_request ,view_membership_requests,manage_membership_request,community_list_view,UpdateCommunityHabitProgressView 
 from . import views
 
 
@@ -36,4 +36,5 @@ urlpatterns = [
     path('communities/joined_communities/', CommunityViewSet.as_view({'get': 'joined_communities'}), name='joined-communities'),
     # path('communities/<int:community_id>/update_habit_progress/', update_community_habit_progress, name='update-community-habit-progress'),
     path('recommended_communities/', CommunityViewSet.as_view({'get': 'recommended_communities'}), name='recommended-communities'),
-    path('communities/<int:community_id>/update_habit_progress/', UpdateCommunityHabitProgressView.as_view(), name='update-community-habit-progress'),]
+    path('communities/<int:community_id>/update_habit_progress/', UpdateCommunityHabitProgressView.as_view(), name='update-community-habit-progress'),
+]

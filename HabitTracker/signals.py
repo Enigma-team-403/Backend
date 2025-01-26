@@ -23,8 +23,8 @@ def update_community_progress(sender, instance, **kwargs):
     if community_id:
         update_progress_url = f'http://127.0.0.1:8000/api/community/communities/{community_id}/update_habit_progress/'
         data = {
-            'progress_id': instance.id,
-            'completed_amount': instance.completed_amount
+            'habit_id': habit.id,
+            'completed': instance.completed_amount > 0
         }
         try:
             response = requests.post(update_progress_url, json=data)

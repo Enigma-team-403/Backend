@@ -22,6 +22,18 @@ from rest_framework import generics
 from .models import Habit
 from .serializers import HabitSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import Habit
+from .serializers import HabitSerializer
+
+class HabitDetailView(APIView):
+    def get(self, request, pk, format=None):
+        habit = get_object_or_404(Habit, pk=pk)
+        serializer = HabitSerializer(habit)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 
@@ -72,7 +84,14 @@ class HabitUpdateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from HabitTracker.models import DailyProgress, Habit
 from django.utils.timezone import now
+from rest_framework.permissions import IsAuthenticated
+import requests
 
 class UpdateProgressView(APIView):
     permission_classes = [IsAuthenticated]  # افزودن کلاس مجوز برای احراز هویت
@@ -83,23 +102,37 @@ class UpdateProgressView(APIView):
 
         habit = get_object_or_404(Habit, id=habit_id)
         current_date = now().date()
-        # if DailyProgress.objects.filter(habit=habit, date=current_date).exists():
-        #     return Response({'message': 'You have already done this habit today.', 'progress': habit.progress}, status=status.HTTP_400_BAD_REQUEST)
 
-        daily_progress = DailyProgress.objects.create(habit=habit, date=current_date)
+        daily_progress, created = DailyProgress.objects.get_or_create(habit=habit, date=current_date)
 
         if completed:
             daily_progress.completed_amount = habit.daily_target  # اگر انجام شد، مقدار daily_target اضافه شود
         else:
             daily_progress.completed_amount = 0  # اگر انجام نشد، مقدار صفر باشد
-        
+
         daily_progress.save()
-        total_completed = sum(dp.completed_amount for dp in habit.daily_progress.all())
-        habit.progress = (total_completed / habit.goal) * 100 if habit.goal > 0 else 0
+
+        # به‌روزرسانی پروگرس عادت
+        progress_increase = (habit.daily_target / habit.goal) * 100 if habit.goal > 0 else 0
+        habit.progress = min(habit.progress + progress_increase, 100)  # افزایش پروگرس، حداکثر تا 100
         habit.save()
 
         message = "Today's habit is done." if completed else "Today's habit is not done."
 
+        # ارسال درخواست به‌روزرسانی به اپلیکیشن کامیونیتی
+        communities = habit.communities.all()
+        for community in communities:
+            update_progress_url = f'http://127.0.0.1:8000/api/community/communities/{community.id}/update_habit_progress/'
+            data = {
+                'habit_id': habit.id,
+                'completed': completed
+            }
+            try:
+                response = requests.post(update_progress_url, json=data)
+                response.raise_for_status()
+                print(f"Habit progress updated in Community app successfully for community {community.id}.")
+            except requests.exceptions.RequestException as e:
+                print(f"Error updating habit progress in Community app for community {community.id}: {e}")
 
         return Response({'message': message, 'progress': habit.progress}, status=status.HTTP_200_OK)
 

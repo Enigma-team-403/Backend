@@ -21,7 +21,7 @@ class Community(models.Model):
     categories = models.ManyToManyField(Category, related_name='communities')
     profile_picture = models.ImageField(upload_to='profile_community/', null=True, blank=True)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='communities', blank=True)
-    profile_picture = models.ImageField(upload_to='community_profiles/', null=True, blank=True)
+    # profile_picture = models.ImageField(upload_to='community_profiles/', null=True, blank=True)
     def __str__(self):
         return self.title
     
@@ -36,6 +36,6 @@ class MembershipRequest(models.Model):
     selected_habit = models.ForeignKey(Habit, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return f"Request from {self.requester} to {self.community.name} ({self.status})"
+        return f"Request from {self.requester} to {self.community.title} ({self.status})"
 
 

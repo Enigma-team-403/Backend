@@ -25,6 +25,11 @@ from django.contrib.auth import get_user_model
 import requests
 from django.db import models    
 from interest.models import Interest, UserInterest  # فرض کنید مدل علاقه‌مندی‌ها در اپ interest وجود دارد
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+import requests
+
 
 User = get_user_model()
 
@@ -230,21 +235,31 @@ class CommunityViewSet(viewsets.ModelViewSet):
             membership_request = MembershipRequest.objects.filter(community=community, requester=member).first()
             if membership_request and membership_request.selected_habit:
                 selected_habit = membership_request.selected_habit
-                total_completed = sum(dp.completed_amount for dp in selected_habit.daily_progress.all())
-                progress_percentage = (total_completed / selected_habit.goal) * 100 if selected_habit.goal > 0 else 0
-                habit_data = {
-                    'id': selected_habit.id,
-                    'name': selected_habit.name,
-                    'progress_percentage': progress_percentage,
-                }
+
+                # ارسال درخواست به اندپوینت /habits/ برای دریافت پروگرس هبیت
+                habit_details_url = f'http://127.0.0.1:8000/api/habits/habits/{selected_habit.id}/'
+                try:
+                    response = requests.get(habit_details_url)
+                    response.raise_for_status()
+                    habit_data = response.json()
+                    progress_percentage = habit_data.get('progress', 0)  # دریافت پروگرس از پاسخ
+
+                    habit_info = {
+                        'id': selected_habit.id,
+                        'name': selected_habit.name,
+                        'progress_percentage': progress_percentage,
+                    }
+                except requests.exceptions.RequestException as e:
+                    print(f"Error fetching habit progress: {e}")
+                    habit_info = None
             else:
-                habit_data = None
+                habit_info = None
 
             response_data.append({
                 'member_id': member.pk,
                 'username': member.username,
                 'profile_picture': profile.profile_picture.url if profile.profile_picture else None,  # افزودن عکس پروفایل
-                'selected_habit': habit_data,
+                'selected_habit': habit_info,
             })
 
         return Response(response_data)
@@ -275,15 +290,16 @@ class CommunityViewSet(viewsets.ModelViewSet):
         communities = Community.objects.filter(members=user).distinct()
         serializer = self.get_serializer(communities, many=True)
         return Response(serializer.data)
-    
-    
+
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Community, MembershipRequest
+from community.models import MembershipRequest
 from HabitTracker.models import DailyProgress, Habit
 from django.utils.timezone import now
+import requests
 
 class UpdateCommunityHabitProgressView(APIView):
     def post(self, request, community_id, format=None):
@@ -293,66 +309,41 @@ class UpdateCommunityHabitProgressView(APIView):
         habit = get_object_or_404(Habit, id=habit_id)
         current_date = now().date()
 
-        # پیدا کردن یا ایجاد DailyProgress برای تاریخ جاری
         daily_progress, created = DailyProgress.objects.get_or_create(habit=habit, date=current_date)
 
         if completed:
             daily_progress.completed_amount = habit.daily_target  # اگر انجام شد، مقدار daily_target اضافه شود
         else:
             daily_progress.completed_amount = 0  # اگر انجام نشد، مقدار صفر باشد
-        
+
         daily_progress.save()
 
-        # به‌روزرسانی پیشرفت عادت
-        total_completed = sum(dp.completed_amount for dp in habit.daily_progress.all())
-        habit.progress = (total_completed / habit.goal) * 100 if habit.goal > 0 else 0
+        # به‌روزرسانی پروگرس عادت
+        progress_increase = (habit.daily_target / habit.goal) * 100 if habit.goal > 0 else 0
+        habit.progress = min(habit.progress + progress_increase, 100)  # افزایش پروگرس، حداکثر تا 100
         habit.save()
 
-        # به‌روزرسانی پیشرفت در کامیونیتی
+        # ارسال درخواست به‌روزرسانی به اپ هبیت
+        update_progress_url = 'http://127.0.0.1:8000/api/habit/update_progress/'  # مطمئن شوید که این URL صحیح است
+        data = {
+            'habit_id': habit.id,
+            'completed': daily_progress.completed_amount > 0
+        }
         try:
-            membership_request = get_object_or_404(MembershipRequest, community_id=community_id, requester=request.user, selected_habit=habit)
-            membership_request.selected_habit.progress = habit.progress
-            membership_request.save()
-        except MembershipRequest.DoesNotExist:
-            return Response({"detail": "Membership request not found."}, status=status.HTTP_404_NOT_FOUND)
+            response = requests.post(update_progress_url, json=data)
+            response.raise_for_status()
+            print("Habit progress updated in Habit Tracker successfully.")
+        except requests.exceptions.RequestException as e:
+            print(f"Error updating habit progress in Habit Tracker: {e}")
+
+        # به‌روزرسانی پیشرفت در کامیونیتی
+        membership_request = get_object_or_404(MembershipRequest, community_id=community_id, requester=request.user, selected_habit=habit)
+
+        # به‌روزرسانی selected_habit در درخواست عضویت
+        membership_request.selected_habit.progress = habit.progress
+        membership_request.selected_habit.save()
 
         return Response({'message': "Today's habit progress updated.", 'progress': habit.progress}, status=status.HTTP_200_OK)
-
-
-
-
-
-import requests
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def update_community_habit_progress(request, community_id):
-    membership_request = MembershipRequest.objects.filter(community_id=community_id, requester=request.user).first()
-    if not membership_request:
-        return Response({"detail": "Membership request not found."}, status=404)
-
-    selected_habit = membership_request.selected_habit
-    if not selected_habit:
-        return Response({"detail": "Selected habit not found."}, status=404)
-
-    update_progress_url = 'http://127.0.0.1:8000/api/habits/update-progress/'
-    data = {
-        'progress_id': request.data.get('progress_id'),
-        'completed': request.data.get('completed')
-    }
-    
-    # Print the data and URL for debugging
-    print(f"Sending data to {update_progress_url}: {data}")
-
-    try:
-        response = requests.post(update_progress_url, json=data)
-        response.raise_for_status()
-        print("Update successful.")
-    except requests.exceptions.RequestException as e:
-        print(f"Error updating progress: {e}")
-        return Response({"detail": str(e)}, status=500)
-
-    return Response(response.json(), status=response.status_code)
 
 
 def community_list_view(request):

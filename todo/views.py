@@ -183,17 +183,6 @@ class ListViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 
-    # @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
-    # def filter_by_tag(self, request):
-    #     tag_name = request.query_params.get('tag', None)
-    #     if tag_name:
-    #         lists = self.get_queryset().filter(tasks__tag__name=tag_name).distinct()
-    #     else:
-    #         lists = self.get_queryset().none()
-
-    #     serializer = self.get_serializer(lists, many=True)
-    #     return Response(serializer.data)
-
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def filter_by_month(self, request):
         date_str = request.query_params.get('month', None)
