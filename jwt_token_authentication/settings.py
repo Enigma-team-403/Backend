@@ -37,6 +37,21 @@ AUTH_USER_MODEL = 'members.User'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
     
+    
+# settings.py
+
+import environ
+import os
+
+env = environ.Env()
+
+# انتخاب فایل env مناسب بر اساس محیط
+ENV_FILE = '.env.local' if os.environ.get('DJANGO_ENV') == 'local' else '.env.production'
+environ.Env.read_env(ENV_FILE)
+
+BASE_API_URL = env('BASE_API_URL')
+
+    
 # # Application definition
 # CORS_ALLOW_CREDENTIALS = True
 # CORS_ALLOW_METHODS = ('*', )
