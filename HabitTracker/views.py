@@ -119,7 +119,7 @@ class UpdateProgressView(APIView):
 
         message = "Today's habit is done." if completed else "Today's habit is not done."
     
-        BASE_API_URL = 'https://shadizargar.pythonanywhere.com/'  # آدرس پایه API خود را اینجا وارد کنید
+        BASE_API_URL = 'https://shadizargar.pythonanywhere.com'  # آدرس پایه API خود را اینجا وارد کنید
 
         # ارسال درخواست به‌روزرسانی به اپلیکیشن کامیونیتی
         communities = habit.communities.all()

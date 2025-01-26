@@ -224,7 +224,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
         except Habit.DoesNotExist:
             return Response({"detail": "Selected habit not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    BASE_API_URL = 'https://shadizargar.pythonanywhere.com/'  # آدرس پایه API خود را اینجا وارد کنید
+    BASE_API_URL = 'https://shadizargar.pythonanywhere.com'  # آدرس پایه API خود را اینجا وارد کنید
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):
         community = self.get_object()

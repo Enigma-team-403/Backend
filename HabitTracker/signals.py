@@ -7,7 +7,7 @@ import requests
 
 @receiver(post_save, sender=DailyProgress)
 def update_community_progress(sender, instance, **kwargs):
-    BASE_API_URL = 'https://shadizargar.pythonanywhere.com/'  # آدرس پایه API خود را اینجا وارد کنید
+    BASE_API_URL = 'https://shadizargar.pythonanywhere.com'  # آدرس پایه API خود را اینجا وارد کنید
 
     habit = instance.habit
     total_completed = sum(dp.completed_amount for dp in habit.daily_progress.all())
