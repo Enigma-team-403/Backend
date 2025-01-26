@@ -7,6 +7,8 @@ import requests
 
 @receiver(post_save, sender=DailyProgress)
 def update_community_progress(sender, instance, **kwargs):
+    BASE_API_URL = 'https://shadizargar.pythonanywhere.com/'  # آدرس پایه API خود را اینجا وارد کنید
+
     habit = instance.habit
     total_completed = sum(dp.completed_amount for dp in habit.daily_progress.all())
     progress_percentage = (total_completed / habit.goal) * 100 if habit.goal > 0 else 0
@@ -21,7 +23,7 @@ def update_community_progress(sender, instance, **kwargs):
     
     # ارسال درخواست به‌روزرسانی به کامیونیتی
     if community_id:
-        update_progress_url = f'https://shadizargar.pythonanywhere.com/api/community/communities/{community_id}/update_habit_progress/'
+        update_progress_url = f'{BASE_API_URL}/api/community/communities/{community_id}/update_habit_progress/'
         data = {
             'habit_id': habit.id,
             'completed': instance.completed_amount > 0

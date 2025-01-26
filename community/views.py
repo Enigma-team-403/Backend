@@ -29,6 +29,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 import requests
+from django.conf import settings
 
 
 User = get_user_model()
@@ -223,16 +224,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
         except Habit.DoesNotExist:
             return Response({"detail": "Selected habit not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status
-import requests
-
-class CommunityViewSet(viewsets.ModelViewSet):
-    queryset = Community.objects.all()
-    serializer_class = CommunitySerializer
-
+    BASE_API_URL = 'https://shadizargar.pythonanywhere.com/'  # آدرس پایه API خود را اینجا وارد کنید
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):
         community = self.get_object()
@@ -240,19 +232,15 @@ class CommunityViewSet(viewsets.ModelViewSet):
         response_data = []
 
         for member in members:
-            profile = member.profile  # دریافت پروفایل کاربر
             membership_request = MembershipRequest.objects.filter(community=community, requester=member).first()
             if membership_request and membership_request.selected_habit:
                 selected_habit = membership_request.selected_habit
-
-                # ارسال درخواست به اندپوینت /habits/ برای دریافت پروگرس هبیت
-                habit_details_url = f'https://shadizargar.pythonanywhere.com/api/habits/habits{selected_habit.id}/'
+                habit_details_url = f'{self.BASE_API_URL}/api/habits/habits/{selected_habit.id}/'
                 try:
                     response = requests.get(habit_details_url)
                     response.raise_for_status()
                     habit_data = response.json()
-                    progress_percentage = habit_data.get('progress', 0)  # دریافت پروگرس از پاسخ
-
+                    progress_percentage = habit_data.get('progress', 0)
                     habit_info = {
                         'id': selected_habit.id,
                         'name': selected_habit.name,
@@ -267,11 +255,13 @@ class CommunityViewSet(viewsets.ModelViewSet):
             response_data.append({
                 'member_id': member.pk,
                 'username': member.username,
-                'profile_picture': profile.profile_picture.url if profile.profile_picture else None,  # افزودن عکس پروفایل
+                'profile_picture': member.profile.profile_picture.url if member.profile.profile_picture else None,
                 'selected_habit': habit_info,
             })
 
         return Response(response_data)
+
+    # سایر اکشن‌ها...
 
     @action(detail=False, methods=['get'], url_path='recommended_communities')
     def recommended_communities(self, request):
@@ -311,6 +301,8 @@ from django.utils.timezone import now
 import requests
 
 class UpdateCommunityHabitProgressView(APIView):
+    BASE_API_URL = 'https://shadizargar.pythonanywhere.com/'  # آدرس پایه API خود را اینجا وارد کنید
+
     def post(self, request, community_id, format=None):
         habit_id = request.data.get('habit_id')
         completed = request.data.get('completed', False)  # مقدار پیش‌فرض False
@@ -333,7 +325,7 @@ class UpdateCommunityHabitProgressView(APIView):
         habit.save()
 
         # ارسال درخواست به‌روزرسانی به اپ هبیت
-        update_progress_url = 'http://127.0.0.1:8000/api/habit/update_progress/'  # مطمئن شوید که این URL صحیح است
+        update_progress_url = f'{self.BASE_API_URL}/api/habits/update_progress/'  # مطمئن شوید که این URL صحیح است
         data = {
             'habit_id': habit.id,
             'completed': daily_progress.completed_amount > 0
