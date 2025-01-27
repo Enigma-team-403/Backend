@@ -224,30 +224,24 @@ class CommunityViewSet(viewsets.ModelViewSet):
         except Habit.DoesNotExist:
             return Response({"detail": "Selected habit not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    BASE_API_URL = 'https://shadizargar.pythonanywhere.com'  # آدرس پایه API خود را اینجا وارد کنید
     @action(detail=True, methods=['get'])
     def members(self, request, pk=None):
         community = self.get_object()
-        members = community.members.all()
         response_data = []
 
-        for member in members:
+        for member in community.members.all():
             membership_request = MembershipRequest.objects.filter(community=community, requester=member).first()
-            if membership_request and membership_request.selected_habit:
+            if membership_request:
                 selected_habit = membership_request.selected_habit
-                habit_details_url = f'{self.BASE_API_URL}/api/habits/habits/{selected_habit.id}/'
-                try:
-                    response = requests.get(habit_details_url)
-                    response.raise_for_status()
-                    habit_data = response.json()
-                    progress_percentage = habit_data.get('progress', 0)
+                if selected_habit:
+                    progress_percentage = selected_habit.progress  # درصد پروگرس مستقیم از مدل Habit
+
                     habit_info = {
                         'id': selected_habit.id,
                         'name': selected_habit.name,
                         'progress_percentage': progress_percentage,
                     }
-                except requests.exceptions.RequestException as e:
-                    print(f"Error fetching habit progress: {e}")
+                else:
                     habit_info = None
             else:
                 habit_info = None
@@ -260,8 +254,6 @@ class CommunityViewSet(viewsets.ModelViewSet):
             })
 
         return Response(response_data)
-
-    # سایر اکشن‌ها...
 
     @action(detail=False, methods=['get'], url_path='recommended_communities')
     def recommended_communities(self, request):
